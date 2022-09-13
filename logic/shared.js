@@ -1,4 +1,5 @@
 //if (chrome) browser = chrome;
+//test
 
 String.prototype.toHtmlEntities = function () {
     return this.replace(/./gm, function (s) {
