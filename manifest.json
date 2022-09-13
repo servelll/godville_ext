@@ -1,0 +1,101 @@
+{
+	"content_security_policy": {
+		"extension_pages": "script-src 'self'; object-src 'self'"
+	},
+	"manifest_version": 3,
+	"name": "Auto_Godville",
+	"description": "Легкая автоматизация для Godville",
+	"version": "0.0.1",
+	"icons": {
+		"128": "icon.png"
+	},
+	"background": {
+		"service_worker": "background.js"
+	},
+	"action": {
+		"default_icon": "icon.png",
+		"default_popup": "pages/popup.html"
+	},
+	"options_ui": {
+		"page": "pages/options.html",
+		"browser_style": true
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"https://*/duels/log/*",
+				"file:///*/Godville/*"
+			],
+			"css": [
+				"logic/logs.css"
+			],
+			"js": [
+				"logic/shared.js",
+				"logic/logs.js"
+			]
+		},
+		{
+			"matches": [
+				"https://godville.net/news"
+			],
+			"js": [
+				"logic/news.js"
+			]
+		},
+		{
+			"matches": [
+				"https://godville.net/superhero",
+				"file:///*/Godville/*"
+			],
+			"js": [
+				"logic/shared.js",
+				"logic/superhero.js"
+			],
+			"css": [
+				"logic/superhero.css"
+			],
+			"run_at": "document_end"
+		},
+		{
+			"matches": [
+				"https://godville.net/gods/*"
+			],
+			"css": [
+				"logic/gods.css"
+			],
+			"js": [
+				"lib/moment.min.js",
+				"logic/gods.js"
+			]
+		}
+	],
+	"oauth2": {
+		"client_id": "132591198195-gu38m8sej7jakqml0ect91rvtltthesi.apps.googleusercontent.com",
+		"scopes": [
+			"https://www.googleapis.com/auth/spreadsheets"
+		]
+	},
+	"permissions": [
+		"activeTab",
+		"identity",
+		"storage"
+	],
+	"host_permissions": [
+		"https://gv.erinome.net/",
+		"https://godville.net/",
+		"https://docs.google.com/spreadsheets/",
+		"https://script.google.com/",
+		"https://sheets.googleapis.com/*"
+	],
+	"web_accessible_resources": [
+		{
+			"matches": [
+				"<all_urls>"
+			],
+			"resources": [
+				"parsed_words_for_crossword.txt",
+				"Sound_16300.mp3"
+			]
+		}
+	]
+}

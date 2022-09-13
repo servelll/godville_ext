@@ -1,0 +1,98 @@
+body {
+    text-align: center;
+    font-family: Verdana, Helvetica, Arial, sans-serif;
+    color: #555555;
+    font-size: 90%;
+    background-color: #FFFFFF;
+}
+
+.block {
+    background: #F6F6F9 none repeat scroll 0%;
+    border: 1px solid #CCCCCC;
+    margin: 0pt 0pt 1.0em;
+    margin-top: 0.5em;
+    position: relative;
+}
+
+/**/
+.l_capt {
+    text-align: left;
+    font-weight: bold;
+}
+
+.less_capt {
+    text-align: left;
+    font-size: 0.8em;
+    padding-left: 1em;
+    padding-right: 2em;
+}
+
+.new_line {
+    align-items: center;
+    display: -webkit-flex;
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    width: 95%;
+}
+
+.input {
+    font: 14px arial, sans-serif;
+    border-radius: 5px 5px 5px 5px;
+    border: 1px solid #DDDDDD;
+    padding: 5px;
+    color: #444;
+    background-color: #FFF;
+}
+
+.g_desc {
+    font-size: 0.8em;
+    text-align: center;
+    padding-left: 1em;
+    padding-right: 2em;
+}
+
+.bl_capt {
+    -moz-border-radius-topleft: 5px;
+    -webkit-border-top-left-radius: 5px;
+    -khtml-border-radius-topleft: 5px;
+    border-top-left-radius: 5px;
+    -moz-border-radius-topright: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -khtml-border-radius-topright: 5px;
+    border-top-right-radius: 5px;
+
+    background: #F5F5F5 -webkit-gradient(linear, left top, left 200%, from(#F6F8F9), to(#F7F7F7), color-stop(0.5, #E7E7E7), color-stop(0.5, #F9F9F9));
+    background: #F5F5F5 -moz-linear-gradient(top, #F7FBFE, #E7E7E7 100%, #F9F9F9 100%, #F7F7F7);
+    background: #F5F5F5 -o-linear-gradient(top, #F7FBFE, #E7E7E7 100%, #F9F9F9 100%, #F7F7F7);
+    background-color: #E8E8E8;
+    padding: 0.4em 0.4em;
+    font-weight: bold;
+}
+
+.bl_content {
+    padding: 0.3em 0.5em 0.9em 0.7em;
+    margin-bottom: 0.6em;
+}
+
+.bl_cell {
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -khtml-border-radius: 5px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.field_content_extented {
+    width: 75%;
+}
+
+.rounded_field {
+    resize: vertical;
+    width: 100%;
+    min-height: 12px;
+}
+
+table {
+    width: 100%;
+}

@@ -1,0 +1,56 @@
+#MyGV_craft_del,
+#MyGV_directions_del {
+    font-size: 80%;
+    position: absolute;
+    top: 8px;
+    right: 36px;
+}
+
+#MyGV_del {
+    font-size: 80%;
+    position: absolute;
+    top: 9px;
+    left: 261px;
+}
+
+#MyGV_CalcLink {
+    text-align: center;
+}
+
+#MyGV_AquaLink {
+    text-align: center;
+    display: block;
+}
+
+#MyGV_ToNextHint,
+#MyGV_PolygonTimeBeforeEndHint {
+    position: absolute;
+    right: 35px;
+}
+
+.sail #hk_health .p_bar:before {
+    position: absolute;
+    left: 33%;
+    content: " ";
+    height: 100%;
+    width: 2px;
+    background: #ccc;
+}
+
+#news_pb .p_bar.n_pbar {
+    position: relative;
+    z-index: 2;
+    opacity: 0.8;
+}
+
+#news_pb .p_bar.n_pbar div:before {
+    position: absolute;
+    left: var(--Left);
+    content: " ";
+    height: 4px;
+    width: var(--Width);
+    opacity: 0.8;
+    z-index: 1;
+    border: solid darkred 2px;
+    visibility: var(--Visibility);
+}
