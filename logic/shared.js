@@ -11,6 +11,11 @@ String.fromHtmlEntities = function (string) {
         return String.fromCharCode(s.match(/\d+/gm)[0]);
     })
 };
+String.prototype.fromHtmlEntities = function () {
+    return (this + "").replace(/&#\d+;/gm, function (s) {
+        return String.fromCharCode(s.match(/\d+/gm)[0]);
+    })
+};
 
 Array.prototype.equals = function (array) {
     return array instanceof Array && JSON.stringify(this) === JSON.stringify(array);
