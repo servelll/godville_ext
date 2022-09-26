@@ -190,7 +190,7 @@ if (document.URL.slice(-5) != ".json") {
         }
 
         let trade_start = moment("18.07.2012 16:16", 'DD.MM.YYYY HH:mm');
-        AddDurationObjs(trade_start, "постройки лавки", 'сбережения', 'Лавочник', temple_dates);
+        AddDurationObjs(trade_start, "постройки лавки", 'сбережения|лавка', 'Лавочник', temple_dates);
 
         let souls_start = moment("02.03.2022 15:16", 'DD.MM.YYYY HH:mm');
         AddDurationObjs(souls_start, "собирания всех душ", 'душ', 'Душевник', book_dates);

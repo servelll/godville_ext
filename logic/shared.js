@@ -1,7 +1,4 @@
 //if (chrome) browser = chrome;
-//test
-// test22
-//test33
 
 String.prototype.toHtmlEntities = function () {
     return this.replace(/./gm, function (s) {
@@ -11,6 +8,11 @@ String.prototype.toHtmlEntities = function () {
 };
 String.fromHtmlEntities = function (string) {
     return (string + "").replace(/&#\d+;/gm, function (s) {
+        return String.fromCharCode(s.match(/\d+/gm)[0]);
+    })
+};
+String.prototype.fromHtmlEntities = function () {
+    return (this + "").replace(/&#\d+;/gm, function (s) {
         return String.fromCharCode(s.match(/\d+/gm)[0]);
     })
 };
