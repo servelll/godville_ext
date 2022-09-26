@@ -177,3 +177,4 @@ function fillMiniQuestsTitles() {
         //"mini_quests_time"
     });
 }
+
