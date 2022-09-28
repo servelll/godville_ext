@@ -83,3 +83,14 @@ function fillPushesAtThisSubstep(index, subindex, submove_owner_letter) {
 
     //далее, итерация только по submove_owner_letter, subindex и d[subindex] не используем
 }
+
+function UrlExistsAsync(url) {
+    return new Promise(resolve => {
+        var xhr = new XMLHttpRequest();
+        xhr.open('HEAD', url, true);
+        xhr.onload = function () {
+            resolve(xhr.status != 404);
+        };
+        xhr.send();
+    });
+}

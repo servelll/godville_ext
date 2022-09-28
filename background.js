@@ -70,3 +70,15 @@ chrome.runtime.onMessage.addListener(
 		return true;
 	}
 );
+
+function PrintStorage() {
+	chrome.storage.local.get(object => {
+		if (!chrome.runtime.error) {
+			console.log("local = ", object);
+		} else {
+			console.log(chrome.runtime.error);
+		}
+	});
+}
+
+console.log("write console.log(PrintStorage()) to print chrome.storage.local;")

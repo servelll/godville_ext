@@ -39,6 +39,7 @@
 				"https://godville.net/news"
 			],
 			"js": [
+				"logic/shared.js",
 				"logic/news.js"
 			]
 		},

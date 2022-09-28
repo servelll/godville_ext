@@ -55,7 +55,7 @@ function AddCrosswordThings() {
 	};
 
 	function CheckCrosswordFullfilledState() {
-		if (false || final_mas.every(z => z.array.every(x => x.status != "not filled"))) but.style.display = "none";
+		if (final_mas.every(z => z.array.every(x => x.status != "not filled"))) but.style.display = "none";
 	}
 	let cross = document.querySelector('.cross_q');
 	let text_mas = cross.textContent.replaceAll("\n", "").replaceAll("\t", "").replaceAll("По горизонтали:", "").split("По вертикали:");
