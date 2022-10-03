@@ -87,4 +87,4 @@ function SetToStorage(propertyName, propertyObj) {
 	browser.storage.local.set(a);
 }
 
-console.log("write console.log(PrintStorage()) to print chrome.storage.local;")
+console.log("commands (write right HERE): PrintStorage, SetToStorage(key,obj)");
