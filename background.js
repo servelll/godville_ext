@@ -81,4 +81,10 @@ function PrintStorage() {
 	});
 }
 
+function SetToStorage(propertyName, propertyObj) {
+	let a = {};
+	a[propertyName] = propertyObj;
+	browser.storage.local.set(a);
+}
+
 console.log("write console.log(PrintStorage()) to print chrome.storage.local;")
