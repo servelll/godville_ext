@@ -44,7 +44,7 @@
 		},
 		{
 			"matches": [
-				"https://godville.net/superhero",
+				"https://godville.net/superhero*",
 				"file:///*/Godville/*"
 			],
 			"js": [
@@ -67,7 +67,7 @@
 				"lib/moment.min.js",
 				"logic/gods.js"
 			]
-		}
+		}	
 	],
 	"oauth2": {
 		"client_id": "132591198195-gu38m8sej7jakqml0ect91rvtltthesi.apps.googleusercontent.com",

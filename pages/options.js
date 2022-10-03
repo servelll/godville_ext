@@ -145,6 +145,13 @@ document.getElementById("debug").addEventListener('change', event => {
 	event.preventDefault();
 });
 
+document.getElementById("Updade_DB_of_mini_quests").addEventListener("click", event => {
+	fillMiniQuestsTitles();
+	let d = new Date();
+	Print(`База данных обновлена: ${d.toLocaleString()}`);
+	event.preventDefault();
+});
+
 /*
 
 				<div class="new_line">

@@ -208,14 +208,6 @@ if (forecast.includes("но уточнять его содержимое аст�
 	//after.parentNode.insertBefore(document.createElement("br"), after);
 }
 
-async function getPageFromUrl(url) {
-	let response = await fetch(url);
-	const html_text = await response.text();
-	const parser = new DOMParser();
-	const html = parser.parseFromString(html_text, "text/html");
-	return html;
-}
-
 //разыскиваемый
 let p_s = document.querySelectorAll("#content div.game div p:not([class]):not([id])");
 let wanted_ps = Array.from(p_s).filter(i => i.parentNode.previousSibling.previousSibling != null &&
@@ -484,4 +476,5 @@ window.addEventListener('load', e => {
 	AddBingoListeners();
 	AddCrosswordThings();
 	AddCondensatorThings();
+	
 });
