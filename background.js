@@ -84,7 +84,16 @@ function PrintStorage() {
 function SetToStorage(propertyName, propertyObj) {
 	let a = {};
 	a[propertyName] = propertyObj;
-	browser.storage.local.set(a);
+	chrome.storage.local.set(a);
 }
 
-console.log("commands (write right HERE): PrintStorage, SetToStorage(key,obj)");
+function RemoveKeyFromStorage(key) {
+	chrome.storage.local.remove(key, function () {
+		var error = chrome.runtime.lastError;
+		if (error) {
+			console.error(error);
+		}
+	});
+}
+
+console.log("commands (write right HERE): PrintStorage(), SetToStorage(key, obj), RemoveKeyFromStorage(key/[])");
