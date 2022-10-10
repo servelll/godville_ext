@@ -23,6 +23,15 @@
 	"content_scripts": [
 		{
 			"matches": [
+				"https://godville.net/hero/last_fight"
+			],
+			"js": [
+				"logic/shared.js",
+				"logic/last_fight.js"
+			]
+		},
+		{
+			"matches": [
 				"https://*/duels/log/*",
 				"file:///*/Godville/*"
 			],

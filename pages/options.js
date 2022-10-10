@@ -116,9 +116,9 @@ for (let form of document.querySelectorAll("form")) {
 }
 
 //buttons
-document.getElementById("save").addEventListener("click", (e) => saveOptions(e));
+document.getElementById("save").addEventListener("click", e => saveOptions(e));
 document.getElementById("load").addEventListener("click", LoadIfExist);
-document.getElementById("clearOptions").addEventListener("click", (e) => {
+document.getElementById("clearOptions").addEventListener("click", e => {
 	console.log("Clear");
 
 	browser.storage.local.clear(function () {
@@ -129,7 +129,7 @@ document.getElementById("clearOptions").addEventListener("click", (e) => {
 	});
 	e.preventDefault();
 });
-document.getElementById("Print").addEventListener("click", (e) => {
+document.getElementById("Print").addEventListener("click", e => {
 	browser.storage.local.get('options', function (object) {
 		if (!browser.runtime.error) {
 			console.log("obj = ", object);
@@ -143,6 +143,62 @@ document.getElementById("Print").addEventListener("click", (e) => {
 document.getElementById("debug").addEventListener('change', event => {
 	SetDebugElementsStyle(event.target.checked);
 	event.preventDefault();
+});
+
+function UpdateFieldLabel(button) {
+	let key = button.id;
+	let field_label = button.parentNode.parentNode.querySelector(".field_content label");
+
+	chrome.storage.local.get(key, obj => {
+		field_label.textContent = (Object.keys(obj).length === 0) ? 'undefined' : obj[key];
+	});
+
+	let key2 = key.replace("_lastDate", "");
+	chrome.storage.local.get(key2, obj2 => {
+		field_label.title = (Object.keys(obj2).length === 0) ? 'undefined' : "Всего записей: " + obj2[key2].length + "\n" + obj2[key2];
+	});
+}
+
+//label-click actions && afterloading actions
+for (const label of document.getElementsByClassName("correct_link")) {
+	label.addEventListener("click", e => {
+		window.open(e.target.title, '_blank');
+		e.preventDefault();
+	});
+	UpdateFieldLabel(label.parentNode.querySelector("button"));
+}
+
+//update buttons click() actions
+document.getElementById("terrain_lastDate").addEventListener('click', e => {
+	let label = e.target.parentNode.querySelector(".correct_link");
+	getPageFromUrl(label.title).then(html => {
+		let rawText = html.querySelector("#post-body-698233 > ol").textContent;
+		let clearedArray = rawText.split("\n\t").filter(i => i != "").map(i => i.replaceAll("\n", ""));
+		SetToStorage("terrain_lastDate", new Date().toLocaleString());
+		SetToStorage("terrain", clearedArray);
+		UpdateFieldLabel(e.target);
+	})
+	e.preventDefault();
+});
+document.getElementById("seaMonsters_lastDate").addEventListener('click', e => {
+	let label = e.target.parentNode.querySelector(".correct_link");
+	getPageFromUrl("https://cors-anywhere.herokuapp.com/" + label.title, {
+		headers: { "X-Requested-With": "" }
+	}).then(html => {
+		console.log(html);
+		let rawText = html.querySelector("body > ol").textContent;
+		let clearedArray = rawText.split("\n").filter(i => i != "").map(i => i.replace(/\(.+\)/g, "").trim());
+		console.log(clearedArray);
+		SetToStorage("seaMonsters_lastDate", new Date().toLocaleString());
+		SetToStorage("seaMonsters", clearedArray);
+		UpdateFieldLabel(e.target);
+	}).catch(et => {
+		e.target.parentNode.parentNode.querySelector(".field_content label").textContent = new Date().toLocaleString() + " " + et;
+	});
+	e.preventDefault();
+});
+document.getElementById("Miniq_lastDate").addEventListener('click', e => {
+	e.preventDefault();
 });
 
 /*
