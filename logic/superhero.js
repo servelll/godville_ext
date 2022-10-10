@@ -881,7 +881,7 @@ window.onload = function() {
 
 function AddMiniQuestListeners() {
 	console.log("Зашли ненадолго для лисенерсов");
-	document.querySelector("#hk_quests_completed > div.q_name").textContent = 'укатить кота (мини-квест)';
+	//document.querySelector("#hk_quests_completed > div.q_name").textContent = 'укатить кота (мини-квест)';
 	let quest_target = document.querySelector("#hk_quests_completed > div.q_name");
 	let quest_config = {
 		characterData: true,
