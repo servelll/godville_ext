@@ -694,7 +694,7 @@ waitForContents(() => {
 		}
 		else {
 			console.log("Зашли ненадолго первый раз при загрузке и с БД на памяти");
-			document.querySelector("#hk_quests_completed > div.q_name").textContent = 'укатить кота (мини-квест)';
+			//document.querySelector("#hk_quests_completed > div.q_name").textContent = 'укатить кота (мини-квест)';
 			// первичная проверка задания на мини-квест		
 			UpdateMiniQuestInfo();
 			console.log("апдейтнули");
@@ -794,10 +794,10 @@ function FindTittleInfo(miniQuests, target) {
 			questBlank.forEach(function (quest, questIndex) {
 				if (quest.includes(target)) {
 					titleInfo.push({});
-					titleInfo[i]['recency']      = miniQuests[key]['recency'];
-					titleInfo[i]['quest']        = quest;
-					titleInfo[i]['blankIndex']   = blankIndex;
-					titleInfo[i]['questBlank']   = blankObj.blank;
+					titleInfo[i]['recency'] = miniQuests[key]['recency'];
+					titleInfo[i]['quest'] = quest;
+					titleInfo[i]['blankIndex'] = blankIndex;
+					titleInfo[i]['questBlank'] = blankObj.blank;
 					titleInfo[i]['questProgres'] = (questIndex + 1) + '/' + questBlank.length;
 					if (questIndex + 1 < questBlank.length) {
 						titleInfo[i]['nextQuest'] = questBlank[questIndex + 1];
