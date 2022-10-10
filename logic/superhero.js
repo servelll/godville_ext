@@ -794,10 +794,10 @@ function FindTittleInfo(miniQuests, target) {
 			questBlank.forEach(function (quest, questIndex) {
 				if (quest.includes(target)) {
 					titleInfo.push({});
-					titleInfo[i]['recency']      = miniQuests[key]['recency'];
-					titleInfo[i]['quest']        = quest;
-					titleInfo[i]['blankIndex']   = blankIndex;
-					titleInfo[i]['questBlank']   = blankObj.blank;
+					titleInfo[i]['recency'] = miniQuests[key]['recency'];
+					titleInfo[i]['quest'] = quest;
+					titleInfo[i]['blankIndex'] = blankIndex;
+					titleInfo[i]['questBlank'] = blankObj.blank;
 					titleInfo[i]['questProgres'] = (questIndex + 1) + '/' + questBlank.length;
 					if (questIndex + 1 < questBlank.length) {
 						titleInfo[i]['nextQuest'] = questBlank[questIndex + 1];
