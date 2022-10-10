@@ -515,4 +515,5 @@ window.addEventListener('load', e => {
 	AddBingoListeners();
 	AddCrosswordThings();
 	AddCondensatorThings();
+	
 });

@@ -1,4 +1,4 @@
-//if (chrome) browser = chrome;
+if (chrome) browser = chrome;
 
 String.prototype.toHtmlEntities = function () {
     return this.replace(/./gm, function (s) {
@@ -253,3 +253,90 @@ async function AddErinomeLogsCheckingActions(wup, wup_title) {
         wup_title.appendChild(a);
     }
 }
+
+/*function getArrayViaFrom(dim1, dim2) {
+    //console.time('Execution Time');
+    let output = Array.from(Array(dim1), () => Array[dim2]);
+    //console.timeEnd('Execution Time');
+    return output;
+  }*/
+
+function getArrayViaFor(dim1, dim2) {
+    //console.time('Execution Time 1');
+    let output = [];
+    for (let i = 1; i <= dim1; i++) {
+        output.push(Array(dim2));
+    }
+    //console.timeEnd('Execution Time 1');
+    return output;
+}
+
+/*function createArray(length) {
+    let arr = new Array(length || 0),
+        i = length;
+    if (arguments.length > 1) {
+        let args = Array.prototype.slice.call(arguments, 1);
+        while(i--) arr[length-1 - i] = createArray.apply(this, args);
+    }
+    return arr;
+}
+
+  console.time('Execution Time 1');
+  console.log(getArrayViaFrom(100)) // Takes 10x more than for that is 0.220ms
+  console.timeEnd('Execution Time 1')
+  console.time('Execution Time 1');
+  console.log(getArrayViaFor(100))  // Takes 10x less than From that is 0.020ms
+  console.timeEnd('Execution Time 1')
+  console.time('Execution Time 1');
+  console.log(createArray(100, 1))
+  console.timeEnd('Execution Time 1'); */
+
+let AutoGV_miniQuestsObj = {
+    newquests: {
+        recency: 'новый мини-квест',
+        quests: []
+    },
+    oldquests: {
+        recency: 'старый мини-квест',
+        quests: []
+    }
+}
+
+function fillMiniQuestsTitles(callback) {
+
+    async function parseMiniQuestsTitles(link) {
+        let html = await getPageFromUrl(link);
+        let raw_data = html.querySelector("#post-body-1560386").textContent;
+        let data = raw_data.slice(raw_data.indexOf('Старые мини-квесты') + 18).replace("\nНовые мини-квесты", ' * Metka * ').replace('\n', '').trim();
+        let rawMass = data.split(' * ');
+        let oldQuests = rawMass.slice(0, rawMass.indexOf('Metka'));
+        let newQuests = rawMass.slice(rawMass.indexOf('Metka') + 1);
+        return { oldQuests, newQuests: newQuests };
+    }
+
+    function fillMiniQuestsBlanks(fromArr, toArr, regy) {
+        fromArr.forEach(function (el, index) {
+            toArr[index] = { blank: [] };
+            warning = '(в этом мини-квесте часто этапы меняются местами)';
+            if (el.includes(warning)) {
+                toArr[index].warning = warning;
+            }
+            el.match(regy).forEach(function (item) {
+                toArr[index]['blank'].push(item.trim());
+            });
+        });
+    }
+
+    parseMiniQuestsTitles("https://godville.net/forums/show_topic/2460?page=254#post_1560386").then(mini_quests => {
+        let regy = /([А-ЯЁ0-9][^\→]+)(?=(\→|$))/gi;
+        fillMiniQuestsBlanks(mini_quests.oldQuests, AutoGV_miniQuestsObj['oldquests']['quests'], regy);
+        fillMiniQuestsBlanks(mini_quests.newQuests, AutoGV_miniQuestsObj['newquests']['quests'], regy);
+        browser.storage.local.set({ AutoGV_miniQuestsObj });
+        console.log('Filling mini quests to browser storage');
+        callback();
+        //chrome.storage.local.get(console.log);
+        //localStorage.setItem('AutoGV_miniQuests', JSON.stringify(miniQuestsObj));
+        //"mini_quests_time"
+    });
+}
+
