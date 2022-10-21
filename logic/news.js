@@ -472,9 +472,80 @@ function AddCondensatorThings() {
 	max_div.appendChild(max_clear_button);
 }
 
+// New code by Damir
+function AddCouponThings() {
+	function tableElements(callback) {
+		[...document.querySelectorAll("#bgn > tbody > tr > td")].forEach((tableElem) => {
+			console.log(tableElem);
+			callback(tableElem);
+		});
+	}
+
+	function addAts(tableElem) {
+		if (!document.querySelector("#cpn_name").textContent.includes(tableElem.textContent)) {
+			// Конструктор элемента @
+			const at = document.createElement("a");
+			at.appendChild(document.createTextNode("@"));
+			at.className = 'my_At';
+			at.title = document.querySelector("#cpn_name").textContent;
+			at.onclick = document.querySelector("#coupon_b").click();
+			at.addEventListener("click", () => { tableElements(removeAts) });
+			const atdiv = document.createElement("div");
+			atdiv.textContent = " (";
+			atdiv.className = 'my_div';
+			atdiv.appendChild(at);
+			at.after(')');
+			tableElem.appendChild(atdiv);
+		}
+	}
+
+	function removeAts(tableElem) {
+		while (tableElem.querySelector('div')) {
+			tableElem.removeChild(tableElem.querySelector('div'));
+		}
+	}
+	if (document.querySelector("#coupon_b").disabled){
+		tableElements(addAts);
+	}
+	document.querySelector("#coupon_b").addEventListener('click', () => { tableElements(removeAts) });
+}
+/*
+	if (getComputedStyle(tableElem).color === 'rgb(0, 0, 255)'){
+			tableElem.style.color = "yellow";
+		}
+	else {
+			tableElem.style.color = "green";	
+		}
+	tableElem.title = document.querySelector("#cpn_name").textContent;
+	tableElem.addEventListener(onclick, clickCouponBtn());
+
+*/
+
+
+
+/*function AddCouponListeners() {
+	//console.log("Зашли ненадолго для лисенерсов");
+	let table_target = document.getElementById("bgn");
+	let table_config = {
+		characterData: true,
+		childList: true,
+		attributes: true
+	}
+	let coupon_callback = function (mutationsList, observer) {
+		UpdateCouponInfo();
+	}
+
+	let coupon_observer = new MutationObserver(coupon_callback);
+	coupon_observer.observe(table_target, table_config);
+	console.log("AddCouponListener done");
+}
+*/
+
+
 window.addEventListener('load', e => {
 	AddBingoListeners();
 	AddCrosswordThings();
 	AddCondensatorThings();
-	
+	AddCouponThings();
 });
+

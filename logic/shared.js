@@ -122,60 +122,50 @@ function getArrayViaFor(dim1, dim2) {
   console.log(createArray(100, 1))
   console.timeEnd('Execution Time 1'); */
 
-let AutoGV_miniQuestsObj = {
-    newquests: {
-        recency: 'новый мини-квест',
-        quests: []
-    },
-    oldquests: {
-        recency: 'старый мини-квест',
-        quests: []
-    }
-}
-
 async function getPageFromUrl(url) {
-    let   response  = await fetch(url);
+    let response = await fetch(url);
     const html_text = await response.text();
-    const parser    = new DOMParser();
-    const html      = parser.parseFromString(html_text, "text/html");
+    const parser = new DOMParser();
+    const html = parser.parseFromString(html_text, "text/html");
     return html;
 }
 
 function fillMiniQuestsTitles(callback) {
 
     async function parseMiniQuestsTitles(link) {
-        let html      = await getPageFromUrl(link);
-        let raw_data  = html.querySelector("#post-body-1560386").textContent;
-        let data      = raw_data.slice(raw_data.indexOf('Старые мини-квесты') + 18).replace("\nНовые мини-квесты", ' * Metka * ').replace('\n', '').trim();
-        let rawMass   = data.split(' * ');
+        let html = await getPageFromUrl(link);
+        let raw_data = html.querySelector("#post-body-1560386").textContent;
+        let data = raw_data.slice(raw_data.indexOf('Старые мини-квесты') + 18).replace("\nНовые мини-квесты", ' * Metka * ').replace('\n', '').trim();
+        let rawMass = data.split(' * ');
         let oldQuests = rawMass.slice(0, rawMass.indexOf('Metka'));
         let newQuests = rawMass.slice(rawMass.indexOf('Metka') + 1);
         return { oldQuests, newQuests: newQuests };
     }
 
-    function fillMiniQuestsBlanks(fromArr, toArr, regy) {
-        fromArr.forEach(function (el, index) {
-            toArr[index] = { blank: [] };
-            warning = '(в этом мини-квесте часто этапы меняются местами)';
-            if (el.includes(warning)) {
-                toArr[index].warning = warning;
+    function fillMiniQuestsToStorage(miniQuests) {
+        const regy = /([А-ЯЁ0-9][^\→]+)(?=(\→|$))/gi;
+        const warning = '(в этом мини-квесте часто этапы меняются местами)';
+        let AutoGV_miniQuestsObj = {};
+        for (let key in miniQuests) {
+            AutoGV_miniQuestsObj[key] = {
+                recency: (key == 'oldQuests') ? 'старый мини-квест' : 'новый мини-квест',
+                quests: miniQuests.key.map(el => {
+                    if (el.includes(warning)) {
+                        quests.warning = warning;
+                    }
+                    quests.blank = el.match(regy).map(item => item.trim());
+                    return quests;
+                }),
             }
-            el.match(regy).forEach(function (item) {
-                toArr[index]['blank'].push(item.trim());
-            });
-        });
+        }
+        browser.storage.local.set({ AutoGV_miniQuestsObj });
     }
 
     parseMiniQuestsTitles("https://godville.net/forums/show_topic/2460?page=254#post_1560386").then(mini_quests => {
-        let regy = /([А-ЯЁ0-9][^\→]+)(?=(\→|$))/gi;
-        fillMiniQuestsBlanks(mini_quests.oldQuests, AutoGV_miniQuestsObj['oldquests']['quests'], regy);
-        fillMiniQuestsBlanks(mini_quests.newQuests, AutoGV_miniQuestsObj['newquests']['quests'], regy);
-        browser.storage.local.set({ AutoGV_miniQuestsObj });
+        fillMiniQuestsToStorage(mini_quests);
         console.log('Filling mini quests to browser storage');
         callback();
         //chrome.storage.local.get(console.log);
         //localStorage.setItem('AutoGV_miniQuests', JSON.stringify(miniQuestsObj));
-        //"mini_quests_time"
     });
 }
-

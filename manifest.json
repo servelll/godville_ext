@@ -40,6 +40,9 @@
 			],
 			"js": [
 				"logic/news.js"
+			],
+			"css": [
+				"logic/news.css"
 			]
 		},
 		{

@@ -658,6 +658,25 @@ function tempCallback(mutations, observer) {
 let tempobserver = new MutationObserver(tempCallback);
 tempobserver.observe(document.getElementById('hero_block'), { childList: true, subtree: true });
 
+// New Code by Damir 
+function UpdateMiniQuestsDB() {
+	browser.storage.local.get(['AutoGV_miniQuestsObj'], function (result) {
+		if (Object.keys(result).length == 0) {
+			fillMiniQuestsTitles(UpdateMiniQuestInfo);	// заполнение и колбеком в конце обновление
+			console.log("Filling mini-quests titles DB to browser local storage and update info about mini-quests in the end");
+		}
+		else {
+			// Заход первый раз при загрузке и с БД в памяти
+			document.querySelector("#hk_quests_completed > div.q_name").textContent = 'сделать разминку на минном поле (мини)';
+			// первичная проверка задания на мини-квест		
+			UpdateMiniQuestInfo();
+			console.log("Check and update mini-quests info first time by onloading page");
+		}
+	});
+}
+//
+
+
 //TODO! листенер ожидания реальной прогрузки документа 
 //(потому что обычный addeventlisner('load' и аналоги иногда багано выдают неполную страницу)
 
@@ -669,24 +688,6 @@ waitForContents(() => {
 	AddMyGVCountsBlock();
 	AddLaboratoryPopupObserver();
 	AddGodVoicesPopupObserver();
-
-	// New Code by Damir 
-	browser.storage.local.get(['AutoGV_miniQuestsObj'], function (result) {
-		if (Object.keys(result).length == 0) {
-			fillMiniQuestsTitles(UpdateMiniQuestInfo);	// заполнение и колбеком в конце обновление
-		}
-		else {
-			console.log("Зашли ненадолго первый раз при загрузке и с БД на памяти");
-			document.querySelector("#hk_quests_completed > div.q_name").textContent = 'укатить кота (мини-квест)';
-			// первичная проверка задания на мини-квест		
-			UpdateMiniQuestInfo();
-			console.log("апдейтнули");
-			//сохранение переменной для определения веток мини-квестов//
-		}
-	})
-
-	AddMiniQuestListeners();
-	//
 	let title_chronique = document.querySelector("#m_fight_log div.block_h > h2");
 	if (title_chronique != null) {
 		AddChroniqueStepObserver();
@@ -706,15 +707,14 @@ waitForContents(() => {
 		//AddMonsterInvitingListener();
 		AddFieldHeaderObserver();
 		AddFieldTaskObserver();
+		UpdateMiniQuestsDB();
+		AddMiniQuestListeners();
 	}
 });
 
 chrome.storage.onChanged.addListener(items => {
 	console.log(items);
 });
-
-
-
 
 let godpower = document.querySelector("#cntrl > div.pbar.line > div.gp_val.l_val");
 let polygon = document.querySelector("#r_map > div.block_h > h2");
@@ -740,7 +740,6 @@ if (diary != null) {
 	}
 }
 
-
 // New code by Damir
 /*
 function FindIndexesArray(arr, target) {
@@ -754,21 +753,8 @@ function FindIndexesArray(arr, target) {
 	return indexes;
 }   */
 
-/* function FindIndexesArray(arr, target) {
-	let indexes = [];
-	arr.forEach(function (v1, i1) {
-		v1.forEach(function (v2, i2) {
-			if (v2.includes(target)) {
-				indexes.push(i1, i2);
-			}
-		})
-	})
-	return indexes;
-}*/
-
-
-function FindTittleInfo(miniQuests, target) {
-	let i = 0;
+// Функция поиска информации о мини-квесте в БД возвращает массив объектов с записями о найденных совпадениях
+/*function FindTittleInfo(miniQuests, target) {
 	let titleInfo = [];
 	for (let key in miniQuests) {
 		let quests = miniQuests[key]['quests'];
@@ -776,52 +762,119 @@ function FindTittleInfo(miniQuests, target) {
 			let questBlank = blankObj.blank.slice(1);
 			questBlank.forEach(function (quest, questIndex) {
 				if (quest.includes(target)) {
-					titleInfo.push({});
-					titleInfo[i]['recency']      = miniQuests[key]['recency'];
-					titleInfo[i]['quest']        = quest;
-					titleInfo[i]['blankIndex']   = blankIndex;
-					titleInfo[i]['questBlank']   = blankObj.blank;
-					titleInfo[i]['questProgres'] = (questIndex + 1) + '/' + questBlank.length;
+					let tempObject = {
+						recency: miniQuests[key]['recency'],
+						quest: quest,
+						blankIndex: blankIndex,
+						questBlank: questBlank,
+						questProgress: (questIndex + 1) + '/' + questBlank.length
+					}
 					if (questIndex + 1 < questBlank.length) {
-						titleInfo[i]['nextQuest'] = questBlank[questIndex + 1];
+						tempObject['nextQuest'] = questBlank[questIndex + 1];
 					}
 					if (blankObj.hasOwnProperty('warning')) {
-						titleInfo[i]['warning'] = blankObj['warning'];
+						tempObject['warning'] = blankObj['warning'];
 					}
-					i += 1;
+					titleInfo.push(tempObject);
 				}
 			});
 		});
 	}
-	//console.log(titleInfo);
+	console.log(titleInfo);
+	return titleInfo;
+}
+*/
+
+function FindTittleInfo(miniQuests, target) {
+	let titleInfo = [];
+	for (const miniQuestsObj of Object.values(miniQuests)) {
+		for (const blankObj of miniQuestsObj['quests']) {
+			let questBlank = blankObj.blank.slice(1);
+			for (const [questIndex, quest] of questBlank.entries()) {
+				if (quest.includes(target)) {
+					let tempObject = {
+						recency: miniQuestsObj['recency'],
+						quest: quest,
+						questBlank: questBlank,
+						questProgress: (questIndex + 1) + '/' + questBlank.length
+					}
+					if (questIndex + 1 < questBlank.length) {
+						tempObject['nextQuest'] = questBlank[questIndex + 1];
+					}
+					if (blankObj.hasOwnProperty('warning')) {
+						tempObject['warning'] = blankObj['warning'];
+					}
+					titleInfo.push(tempObject);
+				}
+			}
+		}
+	}
+	console.log(titleInfo);
 	return titleInfo;
 }
 
+// Функция проверки на мини-квест и обновления информации о мини-квесте в title
 function UpdateMiniQuestInfo() {
 	let quest_target = document.querySelector("#hk_quests_completed > div.q_name");
-	if (!quest_target.textContent.includes('мини-квест')) {
-		console.log('Opacheeek miniki NE pod\'ehali');
+	if (!quest_target.textContent.includes('мини')) {
 		quest_target.title = ''; // убираем title, в случае если это не мини-квест
 		return;
 	}
-	console.log('Opacheeek miniki pod\'ehali');
-	let targetQuest = document.querySelector("#hk_quests_completed > div.q_name").textContent.replace(' (мини-квест)', '');
+	let targetQuest = document.querySelector("#hk_quests_completed > div.q_name").textContent.replace(' (мини)', '');
 	//let miniQuests = JSON.parse(localStorage.getItem('AutoGV_miniQuests'));
-	//let miniQuests = {};
 	browser.storage.local.get('AutoGV_miniQuestsObj').then(data => {
-		//Object.assign(miniQuests, data);
+		console.log('Ha');
 		let titleInfo = FindTittleInfo(data.AutoGV_miniQuestsObj, targetQuest);
-		if (titleInfo != 0) {									// проверка на наличие совпадений с БД квестов
-			let questTitle = titleInfo[0].quest;
-			if (titleInfo[0].hasOwnProperty('nextQuest')) {		// проверка на наличие следующего квеста из ветки
-				questTitle += ' → ' + titleInfo[0].nextQuest;
+		if (titleInfo != 0) {
+			let questTitle = '';
+			let commonWarning = 0;
+			let commonRecency = 0;
+			// просмотр на одинаковые поля titleInfo 
+			for (const match2 of titleInfo) {
+				if (match2.hasOwnProperty('warning')) {
+					commonWarning += 1;
+				}
+				if (match2.recency = titleInfo[0].recency) {
+					commonRecency += 1;
+				}
 			}
-			questTitle += ' ' + titleInfo[0]['questProgres'];
-			questTitle += '\n' + titleInfo[0].recency;			// старый или новый мини-квест
+			// Вывод titleInfo
+			for (const match of titleInfo) {
+				if (match.hasOwnProperty('warning')) {		// проверка на наличие предупреждения о меняющемся порядке квестов
+					questTitle += match.questBlank.join(' → ') + '\n';
+					if (commonWarning != titleInfo.length) {
+						questTitle += match['warning'] + '\n';
+					}
+				}
+				else {
+					questTitle += match.quest;
+					if (match.hasOwnProperty('nextQuest')) {		// проверка на наличие следующего квеста из ветки
+						questTitle += ' → ' + match.nextQuest;
+					}
+					questTitle += ' ' + match['questProgress'] + '\n';
+				}
+				if (commonRecency != titleInfo.length) {
+					questTitle += match.recency + '\n';			// старый или новый мини-квест, если разные
+				}
+			}
+			if (commonWarning == titleInfo.length) {
+				questTitle += titleInfo[0].warning + '\n';		// наличие предупреждения о меняющемся порядке квестов для всех квестов
+			}
+			if (commonRecency == titleInfo.length) {
+				questTitle += titleInfo[0].recency;		// старый или новый мини-квест, если одинаково поле у всех квестов
+			}
+			// Старый прямой вывод title без учета одинаковых полей
+			// проверка на наличие совпадений с БД квестов
+			//let questTitle = titleInfo[0].quest;
+			// if (titleInfo[0].hasOwnProperty('nextQuest')) {		// проверка на наличие следующего квеста из ветки
+			// 	questTitle += ' → ' + titleInfo[0].nextQuest;
+			// }
+			// questTitle += ' ' + titleInfo[0]['questProgres'];
+			// questTitle += '\n' + titleInfo[0].recency;			// старый или новый мини-квест
 
-			if (titleInfo[0].hasOwnProperty('warning')) {		// проверка на наличие предупреждения о меняющемся порядке квестов
-				questTitle += ' ' + titleInfo[0]['warning'];
-			}
+			// if (titleInfo[0].hasOwnProperty('warning')) {		// проверка на наличие предупреждения о меняющемся порядке квестов
+			// 	questTitle += ' ' + titleInfo[0]['warning'];
+			// }
 			document.querySelector('#hk_quests_completed > div.q_name').title = questTitle;		// добавление итогового title
 		}
 		else document.querySelector('#hk_quests_completed > div.q_name').title =
@@ -829,9 +882,10 @@ function UpdateMiniQuestInfo() {
 	})
 }
 
+// старый вариант с local.storage
 /*function UpdateMiniQuestInfo() {
-	//document.querySelector("#hk_quests_completed > div.q_name").textContent = 'провести краш тест зимних санок (мини-квест)';
-	let targetQuest = document.querySelector("#hk_quests_completed > div.q_name").textContent.replace(' (мини-квест)', '');
+	//document.querySelector("#hk_quests_completed > div.q_name").textContent = 'провести краш тест зимних санок (мини)';
+	let targetQuest = document.querySelector("#hk_quests_completed > div.q_name").textContent.replace(' (мини)', '');
 	let miniQuests  = JSON.parse(localStorage.getItem('AutoGV_miniQuests'));
 	let inds        = FindIndexesArray(miniQuests, targetQuest);
 	let questTitle  = godvilleMiniQuests[inds[0]][inds[1]];
@@ -861,26 +915,23 @@ window.onload = function() {
  };
  */
 
-
+// Функция добавления слушателей и обработчиков при изменении квеста и при изменении БД с мини-квестами
 function AddMiniQuestListeners() {
-	console.log("Зашли ненадолго для лисенерсов");
-	document.querySelector("#hk_quests_completed > div.q_name").textContent = 'укатить кота (мини-квест)';
+	//console.log("Зашли ненадолго для лисенерсов");
 	let quest_target = document.querySelector("#hk_quests_completed > div.q_name");
 	let quest_config = {
 		characterData: true,
-		characterDataOldValue: true,
 		childList: true
 	}
 	let miniQuest_callback = function (mutationsList, observer) {
 		UpdateMiniQuestInfo();
-		//сохранение переменной для определения веток мини-квестов//
 	}
 
 	let miniQuest_observer = new MutationObserver(miniQuest_callback);
 	miniQuest_observer.observe(quest_target, quest_config);
 	browser.storage.onChanged.addListener((changes, area) => {
 		if (area === 'local' && changes.AutoGV_miniQuestsObj?.newValue) {
-			miniQuest_callback;
+			miniQuest_callback();
 		}
 	});
 	console.log("AddMiniQuestListeners done");

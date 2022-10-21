@@ -1,0 +1,15 @@
+.my_At {
+    color: #199BDC;
+    text-decoration: none;
+}
+
+.my_At:hover {
+    cursor: pointer;
+    text-decoration: none;
+    color: #DA251D;
+}
+
+.my_div {
+    display: inline;
+    text-decoration: none;
+}
