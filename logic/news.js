@@ -35,7 +35,7 @@ function compareArr(arr, strict) {
 }
 
 //crossword
-function AddCrosswordThings() {
+async function AddCrosswordThings() {
 	function FillWord(objs, z) {
 		objs.forEach(function (o, _ind) {
 			//console.log(`${o.getAttribute("class")}`);
@@ -55,7 +55,7 @@ function AddCrosswordThings() {
 	};
 
 	function CheckCrosswordFullfilledState() {
-		if (false || final_mas.every(z => z.array.every(x => x.status != "not filled"))) but.style.display = "none";
+		if (final_mas.every(z => z.array.every(x => x.status != "not filled"))) but.style.display = "none";
 	}
 	let cross = document.querySelector('.cross_q');
 	let text_mas = cross.textContent.replaceAll("\n", "").replaceAll("\t", "").replaceAll("По горизонтали:", "").split("По вертикали:");
@@ -73,6 +73,11 @@ function AddCrosswordThings() {
 	//TODO почистить от пользовательского мусора на всякий
 	console.log("final_mas", final_mas);
 
+	let terrain_obj = await chrome.storage.local.get("terrain");
+	let terrain_source = Array.from(terrain_obj["terrain"]).join("\n");
+	let seaMonsters_obj = await chrome.storage.local.get("seaMonsters");
+	let seaMonsters_source = Array.from(seaMonsters_obj["seaMonsters"]).join("\n");
+
 	let but = document.createElement("button");
 	but.textContent = "Заполнить";
 	but.style = "margin: 10px";
@@ -84,107 +89,116 @@ function AddCrosswordThings() {
 	var pos_mas = [];
 	var accuracy_level = 0;
 	const url = chrome.runtime.getURL('./parsed_words_for_crossword.txt');
-	fetch(url)
-		.then(response => response.text())
-		.then(data => {
-			let diff_types_pos = [...data.matchAll(/^А.+/gim)];
-			let last_pos = -100;
-			for (let v of diff_types_pos) {
-				if (v.index > last_pos) {
-					pos_mas.push(v.index);
+	let response = await fetch(url);
+	let data = await response.text();
+	let diff_types_pos = [...data.matchAll(/^А.+/gim)];
+	let last_pos = -100;
+	for (let v of diff_types_pos) {
+		if (v.index > last_pos) {
+			pos_mas.push(v.index);
+		}
+		last_pos = v.index + v[0].length + 1;
+	}
+	pos_mas.push(data.length);
+	console.log("pos_mas", pos_mas);
+
+	but.addEventListener("click", async function () {
+		let time = new Date();
+		if (time.getUTCHours() == 21 && time.getUTCMinutes() > 4 && time.getUTCMinutes() < 9) {
+			alert("Слишком ранняя разгадка! Подождите до .10 минут");
+			return;
+		}
+
+		let previous_mas = final_mas;
+		for (let j of final_mas) {
+			for (let i of j.array.filter(a => a.status == "not filled")) {
+				i.objs = document.querySelectorAll(`[aria-label *= '${i.index} ${j.dir}']`);
+				let _masks_mas = Array.from(i.objs).map(function (node) {
+					var symb = (node.getAttribute("class") == "sym") ? node.value : node.innerHTML;
+					if (symb == " ") return " ";
+					if (symb == "Ё" || symb == "ё") return '[ЁЕ]';
+					return (symb == "" || symb === undefined) ? "." : `${symb.toLowerCase()}`;
+				});
+
+				let source;
+				i.total_regex_mask = "^" + _masks_mas.join("");
+				const types_mas = ['монстр', 'трофей', 'умение', 'снаряжение', 'босс', 'город'];
+				let num = types_mas.findIndex(type => new RegExp(`${type}`, 'gi').test(i.value));
+				if (num == -1) {
+					if (seaMonsters_source != "" && /мор/gi.test(i.value)) {
+						source = seaMonsters_source;
+					} else if (terrain_source != "" && /местност/gi.test(i.value)) {
+						source = terrain_source;
+					}
+				} else {
+					let indexFirst = (accuracy_level > 1) ? 0 : pos_mas[num];
+					let indexLast = (accuracy_level > 1) ? pos_mas[pos_mas.length - 1] : pos_mas[num + 1];
+					source = data.substring(indexFirst, indexLast);
+					if (accuracy_level < 2 && i.value.includes('Жирный')) i.total_regex_mask += "(?=\|\(.*bold.*\))";
 				}
-				last_pos = v.index + v[0].length + 1;
+
+				if (source != undefined) {
+					//Корован как Сильный монстр????
+					i.match = source.match(new RegExp(i.total_regex_mask, "gim"));
+					if (i.match != null) {
+						i.match = Array.from(new Set(i.match));
+					}
+				} else throw new Error("unknown category!");
 			}
-			pos_mas.push(data.length);
-			console.log("pos_mas", pos_mas);
+		}
+		//check Confilcts of mas.copy
+		//construct total final_mas
+		//break if equal
 
-			but.addEventListener("click", function () {
-				let time = new Date();
-				if (time.getUTCHours() == 21 && time.getUTCMinutes() > 4 && time.getUTCMinutes() < 9) {
-					alert("Слишком ранняя разгадка! Подождите до .10 минут");
-					return;
+		console.log("final_mas", final_mas);
+
+		//заполняем
+		//уровни точности
+		//на 0 итерацию - чистые маски
+		//на 1 - дозаполняем найденным по новым маски с всем заполненным на 0
+		//на 2 - ослабляем рамки, TODO ищем ложно заполненные
+		for (let j of final_mas) {
+			for (let i of j.array) {
+				//общее множеств и одиночки
+				if (i.match != null) {
+					FillWord(i.objs, i.match);
+					if (i.match.length == 1) i.status = "filled";
 				}
+			}
+		}
 
-				let previous_mas = final_mas;
-				for (let j of final_mas) {
-					for (let i of j.array.filter(a => a.status == "not filled")) {
-						i.objs = document.querySelectorAll(`[aria-label *= '${i.index} ${j.dir}']`);
-						let _masks_mas = Array.from(i.objs).map(function (node) {
-							var symb = (node.getAttribute("class") == "sym") ? node.value : node.innerHTML;
-							if (symb == " ") return " ";
-							if (symb == "Ё" || symb == "ё") return '[ЁЕ]';
-							return (symb == "" || symb === undefined) ? "." : `${symb.toLowerCase()}`;
-						});
+		//на 2 - позволяем пользователю выбрать дубли оставшегося
+		if (accuracy_level >= 3) {
+			for (let j of final_mas) {
+				for (let i of j.array.filter(a => a.match != null && a.match.length > 1)) {
+					let b = document.createElement("button");
+					b.style = "margin: 10px";
+					b.textContent = `${i.index} ${j.dir}: ${i.match[0]}`;
+					b.value = 0;
+					FillWord(i.objs, i.match[0]);
 
-						i.total_regex_mask = "^" + _masks_mas.join("");
-						const types_mas = ['онстр', 'рофей', 'Умение', 'Снаряжение', 'Босс', 'Город'];
-						let num = types_mas.findIndex(type => i.value.includes(type));
-						let indexFirst = (accuracy_level > 1) ? 0 : pos_mas[num];
-						let indexLast = (accuracy_level > 1) ? pos_mas[pos_mas.length - 1] : pos_mas[num + 1];
-
-						if (accuracy_level < 2 && i.value.includes('Жирный')) i.total_regex_mask += "(?=\|\(.*bold.*\))";
-						//Корован как Сильный монстр????
-						i.match = data.substring(indexFirst, indexLast).match(new RegExp(i.total_regex_mask, "gim"));
-						if (i.match != null) {
-							i.match = Array.from(new Set(i.match));
-						}
+					b.onclick = function () {
+						this.value++;
+						if (this.value > i.match.length - 1) this.value = 0;
+						this.textContent = `${i.index} ${j.dir}: ${i.match[this.value]}`;
+						FillWord(i.objs, i.match[this.value]);
 					}
+
+					cr.insertBefore(b, but);
+					i.status = "user choose fill";
 				}
-				//check Confilcts of mas.copy
-				//construct total final_mas
-				//break if equal
+			}
+		}
 
-				console.log("final_mas", final_mas);
-
-				//заполняем
-				//уровни точности
-				//на 0 итерацию - чистые маски
-				//на 1 - дозаполняем найденным по новым маски с всем заполненным на 0
-				//на 2 - ослабляем рамки, TODO ищем ложно заполненные
-				for (let j of final_mas) {
-					for (let i of j.array) {
-						//общее множеств и одиночки
-						if (i.match != null) {
-							FillWord(i.objs, i.match);
-							if (i.match.length == 1) i.status = "filled";
-						}
-					}
-				}
-
-				//на 2 - позволяем пользователю выбрать дубли оставшегося
-				if (accuracy_level >= 3) {
-					for (let j of final_mas) {
-						for (let i of j.array.filter(a => a.match != null && a.match.length > 1)) {
-							let b = document.createElement("button");
-							b.style = "margin: 10px";
-							b.textContent = `${i.index} ${j.dir}: ${i.match[0]}`;
-							b.value = 0;
-							FillWord(i.objs, i.match[0]);
-
-							b.onclick = function () {
-								this.value++;
-								if (this.value > i.match.length - 1) this.value = 0;
-								this.textContent = `${i.index} ${j.dir}: ${i.match[this.value]}`;
-								FillWord(i.objs, i.match[this.value]);
-							}
-
-							cr.insertBefore(b, but);
-							i.status = "user choose fill";
-						}
-					}
-				}
-
-				CheckCrosswordFullfilledState();
-				if (previous_mas == final_mas) {
-					accuracy_level++;
-					console.log("Повышаем уровень точности:", accuracy_level);
-					if (accuracy_level == 0) but.title = `Уровень ${accuracy_level}: Поиск по маске только внутри категории и строгая проверка дополнительных свойств (жирный трофей/сильный монстр)`;
-					else if (accuracy_level == 1) but.title = `Уровень ${accuracy_level}: Поиск по маске во всем файле и строгая проверка дополнительных свойств (жирный трофей/сильный монстр)`;
-					else but.title = `Уровень ${accuracy_level} (2+): Поиск по маске во всем файле и игнорирование доп свойств (жирный трофей/сильный монстр)`;
-				}
-			});
-		});
-
+		CheckCrosswordFullfilledState();
+		if (previous_mas == final_mas) {
+			accuracy_level++;
+			console.log("Повышаем уровень точности:", accuracy_level);
+			if (accuracy_level == 0) but.title = `Уровень ${accuracy_level}: Поиск по маске только внутри категории и строгая проверка дополнительных свойств (жирный трофей/сильный монстр)`;
+			else if (accuracy_level == 1) but.title = `Уровень ${accuracy_level}: Поиск по маске во всем файле и строгая проверка дополнительных свойств (жирный трофей/сильный монстр)`;
+			else but.title = `Уровень ${accuracy_level} (2+): Поиск по маске во всем файле и игнорирование доп свойств (жирный трофей/сильный монстр)`;
+		}
+	});
 	console.log("AddCrosswordThings done");
 }
 //прогноз//
@@ -337,6 +351,17 @@ function AddCondensatorThings() {
 		max_perc.textContent += `${addZero(last_datetime.getHours())
 			}:${addZero(last_datetime.getMinutes())}:${addZero(last_datetime.getSeconds())} `;
 	}
+	//here for debug
+	window.addEventListener("beforeunload", function (e) {
+		if (checkbox.checked) {
+			//if (true) {
+			let confirmationMessage = `Поставлена задача по забиранию процента с праноконденсатора, 
+			она требует эту открытую вкладку. Вы действительно хотите выйти?`;
+			e.preventDefault();
+			e.returnValue = confirmationMessage;
+			return confirmationMessage;
+		}
+	});
 
 	let checkbox, input, div, button;
 	if (document.getElementById("gp_cap_use").getAttribute("disabled") != "disabled") {
@@ -357,6 +382,20 @@ function AddCondensatorThings() {
 				checkbox.checked = false;
 			}
 		}
+		//https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event#browser_compatibility
+		/*
+		window.addEventListener("beforeunload", function (e) {
+			//if (checkbox.checked) {
+			if (true) {
+				let confirmationMessage = `Поставлена задача по забиранию процента с праноконденсатора, 
+				она требует эту открытую вкладку. Вы действительно хотите выйти?`;
+				//e.preventDefault();
+				e.returnValue = confirmationMessage;
+				return confirmationMessage;
+			}
+			return false;
+		});
+		*/
 
 		button = document.createElement("button");
 		button.textContent = "🔕";

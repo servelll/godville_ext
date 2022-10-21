@@ -70,3 +70,30 @@ chrome.runtime.onMessage.addListener(
 		return true;
 	}
 );
+
+function PrintStorage() {
+	chrome.storage.local.get(object => {
+		if (!chrome.runtime.error) {
+			console.log("local = ", object);
+		} else {
+			console.log(chrome.runtime.error);
+		}
+	});
+}
+
+function SetToStorage(propertyName, propertyObj) {
+	let a = {};
+	a[propertyName] = propertyObj;
+	chrome.storage.local.set(a);
+}
+
+function RemoveKeyFromStorage(key) {
+	chrome.storage.local.remove(key, function () {
+		var error = chrome.runtime.lastError;
+		if (error) {
+			console.error(error);
+		}
+	});
+}
+
+console.log("commands (write right HERE): PrintStorage(), SetToStorage(key, obj), RemoveKeyFromStorage(key/[])");

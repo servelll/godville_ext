@@ -23,6 +23,15 @@
 	"content_scripts": [
 		{
 			"matches": [
+				"https://godville.net/hero/last_fight"
+			],
+			"js": [
+				"logic/shared.js",
+				"logic/last_fight.js"
+			]
+		},
+		{
+			"matches": [
 				"https://*/duels/log/*",
 				"file:///*/Godville/*"
 			],
@@ -39,6 +48,7 @@
 				"https://godville.net/news"
 			],
 			"js": [
+				"logic/shared.js",
 				"logic/news.js"
 			],
 			"css": [
@@ -47,7 +57,7 @@
 		},
 		{
 			"matches": [
-				"https://godville.net/superhero*",
+				"https://godville.net/superhero",
 				"file:///*/Godville/*"
 			],
 			"js": [
@@ -70,7 +80,7 @@
 				"lib/moment.min.js",
 				"logic/gods.js"
 			]
-		}	
+		}
 	],
 	"oauth2": {
 		"client_id": "132591198195-gu38m8sej7jakqml0ect91rvtltthesi.apps.googleusercontent.com",

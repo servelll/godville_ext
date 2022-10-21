@@ -1,48 +1,64 @@
-function AddLaboratoryPopupObserver() {
+function AddAbstactPopupObserver(name, title_text, inside_observer_callback) {
 	let target = document.querySelector('body');
-	let config = {
+	const config = {
 		childList: true
 	};
 	let callback = function (mutationsList, observer) {
 		let wups = document.querySelectorAll(".wup");
 		for (const wup of wups) {
 			let wup_title = wup.querySelector(".wup-title");
-			if (wup_title != null && wup_title.textContent.includes("Лаборатория")) {
+			if (wup_title != null && wup_title.textContent.includes(title_text)) {
+				console.log(name + "PopupObserver callback inside");
+				let wup_title = wup.querySelector(".wup-title");
 				wup_title.style.display = "flex";
 				wup_title.style.justifyContent = "space-between";
 				wup.querySelector(".wup-content").removeAttribute("style");
 
-				let a = wup_title.querySelector("#MyGV_CalcLink");
-				if (a == null) {
-					a = document.createElement("a");
-					a.textContent = "Ссылка на калькулятор";
-					a.id = "MyGV_CalcLink";
-					a.title = "Полный рассчет на http://godb.gandjubas.de/";
-					a.onclick = (e) => {
-						let txt = Array.from(wup.querySelectorAll(".wup-content > div .bps_line")).reduce((acc, curr) => {
-							return acc + curr.querySelector(".bps_capt").textContent + "+" + curr.querySelector(".bps_val").textContent.replaceAll(" ", "+") + "%0D%0A";
-						}, "");
-						window.open("http://godb.gandjubas.de/golem/index.php?txt=" + txt, '_blank');
-					}
-					wup_title.appendChild(a);
-				}
-				for (const x of wup.querySelectorAll(".wup-content > div .bps_line .div_link_nu")) {
-					x.addEventListener('click', function (e) {
-						alert("test");
-					});
-				}
-
+				inside_observer_callback(wup, wup_title);
 			}
 		}
 	}
+
 	let observer = new MutationObserver(callback);
 	observer.observe(target, config);
 
-	console.log("AddLaboratoryPopupObserver done");
+	console.log("Add" + name + "PopupObserver done");
+}
+
+function AddDuelLogsPopupObserver() {
+	//TODO https://godville.net/hero/last_fight
+	//TODO third eye
+	//todo еще и внутри /logs
+	AddAbstactPopupObserver("DuelLogs", "История сражений", AddErinomeLogsCheckingActions);
+}
+
+function AddLaboratoryPopupObserver() {
+	AddAbstactPopupObserver("Laboratory", "Лаборатория", function (wup, wup_title) {
+		let a = wup_title.querySelector("#MyGV_CalcLink");
+		if (a == null) {
+			a = document.createElement("a");
+			a.textContent = "Ссылка на калькулятор";
+			a.id = "MyGV_CalcLink";
+			a.title = "Полный рассчет на http://godb.gandjubas.de/";
+			a.onclick = () => {
+				let txt = Array.from(wup.querySelectorAll(".wup-content > div .bps_line")).reduce((acc, curr) => {
+					return acc + curr.querySelector(".bps_capt").textContent + "+" + curr.querySelector(".bps_val").textContent.replaceAll(" ", "+") + "%0D%0A";
+				}, "");
+				window.open("http://godb.gandjubas.de/golem/index.php?txt=" + txt, '_blank');
+			}
+			wup_title.appendChild(a);
+		}
+		/* do i need it ???
+		for (const x of wup.querySelectorAll(".wup-content > div .bps_line .div_link_nu")) {
+			x.addEventListener('click', function (e) {
+				alert("test");
+			});
+		}
+		*/
+	});
 }
 
 function AddGodVoicesPopupObserver() {
-	//кнопка удаления лишних гласов
 	let target = document.querySelector('body');
 	let config = {
 		childList: true
@@ -209,7 +225,7 @@ function AddPolygonStepObserver() {
 		console.log("AddPolygonStepObserver callback");
 		//let substep_in_perc = document.querySelector("#turn_pbar .p_val");
 		let re = /\d+/g;
-		let step = Number(re.exec(polygon_chronuque.firstChild.textContent)[0]);
+		let step = Number(re.exec(polygon_chronuque.textContent)[0]);
 		let seconds_left = (41 - step) * 20;
 		let timerId = setTimeout(function tick() {
 			div.textContent = seconds_left--;
@@ -632,7 +648,7 @@ function waitForContents(callback) {
 		}
 	}
 	ObserverCallback();
-	console.log("obserse");
+	console.log("waitForContents obserse");
 	let observer = new MutationObserver(ObserverCallback);
 	observer.observe(document.body, { childList: true, subtree: true });
 }
@@ -686,6 +702,7 @@ waitForContents(() => {
 	//console.log("document", document.body.outerHTML);
 	//console.log(document.getElementById('stats'), document.getElementById('m_info'), document.getElementById('b_info'));
 	AddMyGVCountsBlock();
+	AddDuelLogsPopupObserver();
 	AddLaboratoryPopupObserver();
 	AddGodVoicesPopupObserver();
 	let title_chronique = document.querySelector("#m_fight_log div.block_h > h2");
