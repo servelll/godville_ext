@@ -599,9 +599,7 @@ function AddFieldTaskObserver() {
 function AddFieldHeaderObserver() {
 	let target = document.querySelector("#news > div.block_h > h2");
 	let config = {
-		childList: true//,
-		//characterData: true, //required subtree: true
-		//subtree: true
+		childList: true
 	};
 	let callback = function (mutationsList, observer) {
 		let val = target.textContent.includes("из города") ? "hidden" : "visible";
@@ -822,7 +820,7 @@ function FindTittleInfo(miniQuests, target) {
 			}
 		}
 	}
-	console.log(titleInfo);
+	//console.log(titleInfo);
 	return titleInfo;
 }
 
