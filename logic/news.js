@@ -351,17 +351,6 @@ function AddCondensatorThings() {
 		max_perc.textContent += `${addZero(last_datetime.getHours())
 			}:${addZero(last_datetime.getMinutes())}:${addZero(last_datetime.getSeconds())} `;
 	}
-	//here for debug
-	window.addEventListener("beforeunload", function (e) {
-		if (checkbox.checked) {
-			//if (true) {
-			let confirmationMessage = `Поставлена задача по забиранию процента с праноконденсатора, 
-			она требует эту открытую вкладку. Вы действительно хотите выйти?`;
-			e.preventDefault();
-			e.returnValue = confirmationMessage;
-			return confirmationMessage;
-		}
-	});
 
 	let checkbox, input, div, button;
 	if (document.getElementById("gp_cap_use").getAttribute("disabled") != "disabled") {
@@ -382,20 +371,18 @@ function AddCondensatorThings() {
 				checkbox.checked = false;
 			}
 		}
+
 		//https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event#browser_compatibility
-		/*
-		window.addEventListener("beforeunload", function (e) {
-			//if (checkbox.checked) {
-			if (true) {
-				let confirmationMessage = `Поставлена задача по забиранию процента с праноконденсатора, 
+		if (checkbox != undefined) {
+			window.addEventListener("beforeunload", function (e) {
+				if (checkbox?.checked) {
+					let confirmationMessage = `Поставлена задача по забиранию процента с праноконденсатора, 
 				она требует эту открытую вкладку. Вы действительно хотите выйти?`;
-				//e.preventDefault();
-				e.returnValue = confirmationMessage;
-				return confirmationMessage;
-			}
-			return false;
-		});
-		*/
+					e.returnValue = confirmationMessage; //need for chrome
+				}
+			});
+			console.log("add beforeunload event");
+		}
 
 		button = document.createElement("button");
 		button.textContent = "🔕";
@@ -446,19 +433,24 @@ function AddCondensatorThings() {
 			function Check_conditions() {
 				return (cond_perc() >= chosen_perc - 1 && checkbox.checked && chosen_perc > 0 && document.getElementById("gp_cap_use").getAttribute("style") == null);
 			}
+			function DoActions() {
+				document.getElementById("gp_cap_use").click();
+				if (button.textContent == "🔔") {
+					var sound = new Audio(chrome.runtime.getURL('Sound_16300.mp3'));
+					sound.play();
+				}
+				checkbox.checked = false;
+
+				//update_button.display = "none"; TODO_wtf?????
+				console.log(document.getElementById("gpc_val").textContent, ` попытались забрать в ${new Date().getSeconds()}s ${new Date().getUTCMilliseconds()} ms`);
+			}
+
 			if (Check_conditions()) {
+				DoActions();
 				//TODO параметр уставки из настроек
 				setTimeout(function () {
 					if (Check_conditions()) {
-						document.getElementById("gp_cap_use").click();
-						if (button.textContent == "🔔") {
-							var sound = new Audio(chrome.runtime.getURL('Sound_16300.mp3'));
-							sound.play();
-						}
-						checkbox.checked = false;
-
-						//update_button.display = "none"; TODO_wtf?????
-						console.log(document.getElementById("gpc_val").textContent, ` попытались забрать в ${new Date().getSeconds()}s ${new Date().getUTCMilliseconds()} ms`);
+						DoActions();
 					}
 				}, 1500);
 				//200, 500 мало
@@ -511,7 +503,6 @@ function AddCondensatorThings() {
 	max_div.appendChild(max_clear_button);
 }
 
-// New code by Damir
 function AddCouponThings() {
 	function tableElements(callback) {
 		[...document.querySelectorAll("#bgn > tbody > tr > td")].forEach((tableElem) => {
@@ -543,27 +534,14 @@ function AddCouponThings() {
 			tableElem.removeChild(tableElem.querySelector('div'));
 		}
 	}
-	if (document.querySelector("#coupon_b").disabled){
+	if (document.querySelector("#coupon_b").disabled) {
 		tableElements(addAts);
 	}
 	document.querySelector("#coupon_b").addEventListener('click', () => { tableElements(removeAts) });
 }
-/*
-	if (getComputedStyle(tableElem).color === 'rgb(0, 0, 255)'){
-			tableElem.style.color = "yellow";
-		}
-	else {
-			tableElem.style.color = "green";	
-		}
-	tableElem.title = document.querySelector("#cpn_name").textContent;
-	tableElem.addEventListener(onclick, clickCouponBtn());
-
-*/
-
-
 
 /*function AddCouponListeners() {
-	//console.log("Зашли ненадолго для лисенерсов");
+	//console.log("AddCouponListeners start");
 	let table_target = document.getElementById("bgn");
 	let table_config = {
 		characterData: true,
@@ -576,10 +554,13 @@ function AddCouponThings() {
 
 	let coupon_observer = new MutationObserver(coupon_callback);
 	coupon_observer.observe(table_target, table_config);
-	console.log("AddCouponListener done");
+	console.log("AddCouponListeners done");
 }
 */
 
+
+//TODO кнопка повешения попыток кликнуть на кнопку по таймауту
+//TODO закрыть вкладку-чекбокс
 
 window.addEventListener('load', e => {
 	AddBingoListeners();

@@ -25,11 +25,7 @@ function SetDebugElementsStyle(debug) {
 }
 
 function SetDisplaying(node, bool) {
-	if (bool) {
-		node.style.display = "";
-	} else {
-		node.style.display = "none";
-	}
+	node.style.display = (bool) ? "" : "none";
 }
 
 function SetSelectStyle(e) {
@@ -146,16 +142,17 @@ document.getElementById("debug").addEventListener('change', event => {
 });
 
 function UpdateFieldLabel(button) {
-	let key = button.id;
-	let field_label = button.parentNode.parentNode.querySelector(".field_content label");
+	let line = button.parentNode.parentNode;
+	let key = line.id;
+	let key_date = key + "_lastDate";
+	let field_label = line.querySelector(".field_content label");
 
-	chrome.storage.local.get(key, obj => {
-		field_label.textContent = (Object.keys(obj).length === 0) ? 'undefined' : obj[key];
+	chrome.storage.local.get(key_date, obj => {
+		field_label.textContent = (Object.keys(obj).length === 0) ? 'undefined' : obj[key_date];
 	});
 
-	let key2 = key.replace("_lastDate", "");
-	chrome.storage.local.get(key2, obj2 => {
-		field_label.title = (Object.keys(obj2).length === 0) ? 'undefined' : "Всего записей: " + obj2[key2].length + "\n" + obj2[key2];
+	chrome.storage.local.get(key, obj2 => {
+		field_label.title = (Object.keys(obj2).length === 0) ? 'undefined' : "Всего записей: " + obj2[key].length + "\n" + obj2[key];
 	});
 }
 
@@ -165,11 +162,24 @@ for (const label of document.getElementsByClassName("correct_link")) {
 		window.open(e.target.title, '_blank');
 		e.preventDefault();
 	});
-	UpdateFieldLabel(label.parentNode.querySelector("button"));
+
+	let caption = label.parentNode;
+	UpdateFieldLabel(caption.querySelector(".update"));
+}
+
+for (const button of document.getElementsByClassName("clear")) {
+	let line = button.parentNode.parentNode;
+	let key = line.id;
+	button.addEventListener("click", e => {
+		SetToStorage(key + "_lastDate", new Date().toLocaleString());
+		SetToStorage(key, []);
+		UpdateFieldLabel(button);
+		e.preventDefault();
+	});
 }
 
 //update buttons click() actions
-document.getElementById("terrain_lastDate").addEventListener('click', e => {
+document.querySelector("#terrain .update").addEventListener('click', e => {
 	let label = e.target.parentNode.querySelector(".correct_link");
 	getPageFromUrl(label.title).then(html => {
 		let rawText = html.querySelector("#post-body-698233 > ol").textContent;
@@ -180,7 +190,7 @@ document.getElementById("terrain_lastDate").addEventListener('click', e => {
 	})
 	e.preventDefault();
 });
-document.getElementById("seaMonsters_lastDate").addEventListener('click', e => {
+document.querySelector("#seaMonsters .update").addEventListener('click', e => {
 	let label = e.target.parentNode.querySelector(".correct_link");
 	getPageFromUrl("https://cors-anywhere.herokuapp.com/" + label.title, {
 		headers: { "X-Requested-With": "" }
@@ -197,35 +207,9 @@ document.getElementById("seaMonsters_lastDate").addEventListener('click', e => {
 	});
 	e.preventDefault();
 });
-document.getElementById("Miniq_lastDate").addEventListener('click', e => {
-	e.preventDefault();
-});
-
-document.getElementById("Updade_DB_of_mini_quests").addEventListener("click", event => {
+document.querySelector("#Miniq .update").addEventListener('click', e => {
 	fillMiniQuestsTitles();
 	let d = new Date();
 	Print(`База данных обновлена: ${d.toLocaleString()}`);
-	event.preventDefault();
+	e.preventDefault();
 });
-
-/*
-
-				<div class="new_line">
-					<table class="field_content">
-						<tr>
-							<th></th>
-							<th>газета</th>
-							<th>поле</th>
-							<th>дуэли</th>
-						</tr>
-						<tr>
-							<td></td>
-							<td><input type="checkBox" id=""></td>
-						</tr>
-						<tr>
-							<td></td>
-							<td><input type="checkBox" id=""></td>
-						</tr>
-					</table>
-				</div>
-*/

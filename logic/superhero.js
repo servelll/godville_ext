@@ -11,7 +11,7 @@ function AddAbstactPopupObserver(name, title_text, inside_observer_callback) {
 				console.log(name + "PopupObserver callback inside");
 				let wup_title = wup.querySelector(".wup-title");
 				wup_title.style.display = "flex";
-				wup_title.style.justifyContent = "space-between";
+				wup_title.style.justifyContent = "space-around";
 				wup.querySelector(".wup-content").removeAttribute("style");
 
 				inside_observer_callback(wup, wup_title);
@@ -25,11 +25,21 @@ function AddAbstactPopupObserver(name, title_text, inside_observer_callback) {
 	console.log("Add" + name + "PopupObserver done");
 }
 
-function AddDuelLogsPopupObserver() {
+function AddLogsHistoryPopupObserver() {
 	//TODO https://godville.net/hero/last_fight
 	//TODO third eye
 	//todo еще и внутри /logs
-	AddAbstactPopupObserver("DuelLogs", "История сражений", AddErinomeLogsCheckingActions);
+	AddAbstactPopupObserver("LogsHistory", "История сражений", function (wup, wup_title) {
+		wup_title.innerHTML = "<a href=https://godville.net/hero/last_fight>История сражений</a>";
+
+		//wait until wup will load
+		let observer_callback = function (mutationsList, observer) {
+			observer.disconnect();
+			AddErinomeLogsCheckingActions(wup, wup_title);
+		};
+		let observer = new MutationObserver(observer_callback);
+		observer.observe(wup.querySelector("#lf_popover_c"), { childList: true });
+	});
 }
 
 function AddLaboratoryPopupObserver() {
@@ -222,6 +232,7 @@ function AddPolygonStepObserver() {
 		characterData: true
 	};
 	let callback = function (mutationsList, observer) {
+		//console.log(document);
 		console.log("AddPolygonStepObserver callback");
 		//let substep_in_perc = document.querySelector("#turn_pbar .p_val");
 		let re = /\d+/g;
@@ -274,7 +285,7 @@ function AddOrUpdateAquariumLinks() {
 
 	let north_south_NearExit = [0, 2].filter(i => exitCellsNear_H[i].every(cell => cell.className.includes("dmw")));
 	let west_east_NearExit = [0, 2].filter(i => exitCellsNear_H.every(r => r[i].className.includes("dmw")));
-	console.log(north_south_NearExit, west_east_NearExit);
+	//console.log(north_south_NearExit, west_east_NearExit);
 	if (north_south_NearExit.length > 0 || west_east_NearExit.length > 0) {
 		console.log("AddOrUpdateAquariumLinks return exitNotNearWall");
 		return;
@@ -598,9 +609,7 @@ function AddFieldHeaderObserver() {
 		if (mutationsList != null) {
 			for (let mutation of mutationsList) {
 				console.log(mutation);
-				if (mutation.type === 'characterData') {
-					console.log('Mutation Detected: Character data has been altered.');
-				}
+				
 			}
 		}
 		*/
@@ -639,42 +648,68 @@ function AddMonsterInvitingListener() {
 	console.log("AddMonsterListener done");
 }
 
-function waitForContents(callback) {
-	function ObserverCallback(mutations, observer) {
-		//if (document.getElementById('hero_block')) {
+//test debug observer created to detect general target for future observers 
+/*
+const testobserver_config = {
+	attributes: true,
+	childList: true,
+	subtree: true
+};
+const callback = function (mutationsList, observer) {
+	for (let mutation of mutationsList) {
+		if (mutation.type === 'childList') {
+			let test = getCSSPath(mutation.target);
+			console.log(test + "\n", 'childList:',
+				Array.from(mutation.addedNodes).map(i => getLocalSelectorOfNode(i)),
+				Array.from(mutation.removedNodes).map(i => getLocalSelectorOfNode(i)));
+		} else if (mutation.type === 'attributes') {
+			console.log(mutation.attributeName, '- attribute:', getCSSPath(mutation.target));
+		} else if (mutation.type === 'characterData') {
+			console.log('characterData:', mutation.target);
+		}
+	}
+};
+const observer = new MutationObserver(callback);
+observer.observe(document.body, testobserver_config);
+*/
+
+//code for ctrl-c ctrl-v in logs page to detect differences (use firefox with ctrl to select vertically)
+/*
+let ids = [
+	"hero_block",
+	"p_status", "load_err", "hint_bar", "hero_columns",
+	"left_block", "central_block", "right_block",
+	"stats", "pet", "trader", "pantheons", "invites", "ideabox", "control", "news", "diary", "hmap", "inventory", "equipment", "skills",
+	"left_left_block", "right_right_block",
+	"arena_columns",
+	"a_left_left_block", "a_right_right_block",
+	"alls", "m_info", "m_control", "m_inventory", "opps", "s_map", "m_fight_log", "map", "o_info", "o_inventory", "bosses", "b_info", "r_map", ".fightblink", "page_settings_link",
+	"a_left_block", "a_central_block", "a_right_block",
+	"page_settings",
+];
+let table = ids.map(i => ({ id: i, style: document.querySelector((i[0] != ".") ? "#" + i : i)?.getAttribute("style") }));
+console.table(table);
+*/
+
+//1) diary -> (any) duel mode (by getElementById("hero_columns"))
+//2) dungeon -> boss_fight
+function waitForContents(callback, level = 0, observer_target_id, observer_config) {
+	//console.log(document.body.innerHTML);
+	console.log("waitForContents, level", level);
+	function ObserverCallback(mutations, inner_observer) {
 		if (document.getElementById('stats') || document.getElementById('m_info') || document.getElementById('b_info')) {
-			observer.disconnect();
+			console.log("ObserverCallback, level", level, "inner_observer =", inner_observer);
+			inner_observer?.disconnect();
+			//waitForContents(callback, ++level, "hero_columns", { attributes: true });
 			callback();
 		}
 	}
-	ObserverCallback();
-	console.log("waitForContents obserse");
 	let observer = new MutationObserver(ObserverCallback);
-	observer.observe(document.body, { childList: true, subtree: true });
+	ObserverCallback(undefined, observer);
+	observer.observe(document.getElementById(observer_target_id), observer_config);
+	console.log("waitForContents end, level", level);
 }
 
-//debug for detect partial loading\changings between duels
-let ids = { 'stats': true, 'm_info': true, 'b_info': true, 'diary': true, 'm_fight_log': true };
-function tempCallback(mutations, observer) {
-	let str = [];
-	for (const [k, v] of Object.entries(ids)) {
-		let obj = document.getElementById(k);
-		let _v = (obj == null);
-		if (_v != v) {
-			str.push(k + "->" + obj);
-			ids[k] = _v;
-		}
-	}
-	if (str.length > 0) {
-		str.unshift(new Date().toLocaleString());
-		chrome.runtime.sendMessage({ command: "print_popup", text: str.join("\n") });
-		//alert(str.join("\n"));
-	}
-}
-let tempobserver = new MutationObserver(tempCallback);
-tempobserver.observe(document.getElementById('hero_block'), { childList: true, subtree: true });
-
-// New Code by Damir 
 function UpdateMiniQuestsDB() {
 	browser.storage.local.get(['AutoGV_miniQuestsObj'], function (result) {
 		if (Object.keys(result).length == 0) {
@@ -690,48 +725,54 @@ function UpdateMiniQuestsDB() {
 		}
 	});
 }
-//
 
-
-//TODO! листенер ожидания реальной прогрузки документа 
+//листенер ожидания реальной прогрузки документа в первый раз 
 //(потому что обычный addeventlisner('load' и аналоги иногда багано выдают неполную страницу)
-
-//console.log("documentBeforeWait", document.body.outerHTML);
-//console.log(document.getElementById('stats'), document.getElementById('m_info'), document.getElementById('b_info'));
+//+ эта же конструкция для включения функций в случае переключения дуэльного режима - неполной перезагрузки
+let was_runned_on = [];
 waitForContents(() => {
-	//console.log("document", document.body.outerHTML);
-	//console.log(document.getElementById('stats'), document.getElementById('m_info'), document.getElementById('b_info'));
-	AddMyGVCountsBlock();
-	AddDuelLogsPopupObserver();
-	AddLaboratoryPopupObserver();
-	AddGodVoicesPopupObserver();
+	let temp_will_run_state = [];
+	if (was_runned_on.length == 0) {
+		temp_will_run_state.push("base");
+		//console.log("document", document.body.outerHTML);
+		//console.log(document.getElementById('stats'), document.getElementById('m_info'), document.getElementById('b_info'));
+
+		AddMyGVCountsBlock();
+		AddLogsHistoryPopupObserver();
+		AddLaboratoryPopupObserver();
+		AddGodVoicesPopupObserver();
+	}
+
 	let title_chronique = document.querySelector("#m_fight_log div.block_h > h2");
-	if (title_chronique != null) {
+	if (title_chronique != null && !was_runned_on.some(i => i.includes("chronique"))) {
 		AddChroniqueStepObserver();
 		if (title_chronique.textContent.includes("боя")) {
 			AddHolemSearch();
 		}
+		temp_will_run_state.push("chronique");
 	}
 	let polygon_title = document.querySelector("#a_central_block div.block_h > h2");
-	if (polygon_title != null && polygon_title.textContent.includes("Полигон")) {
+	if (polygon_title != null && polygon_title.textContent.includes("Полигон") && !was_runned_on.some(i => i.includes("polygon"))) {
 		AddPolygonStepObserver();
+		temp_will_run_state.push("polygon");
 	}
 	let diary = document.querySelector("#diary div.block_h > h2");
-	if (diary != null) {
+	if (diary != null && !was_runned_on.some(i => i.includes("diary"))) {
 		DecideToAddAuraStringObserver();
 		AddInventoryListener();
 		//AddFieldNewsListener();
 		//AddMonsterInvitingListener();
 		AddFieldHeaderObserver();
 		AddFieldTaskObserver();
+
 		UpdateMiniQuestsDB();
 		AddMiniQuestListeners();
-	}
-});
 
-chrome.storage.onChanged.addListener(items => {
-	console.log(items);
-});
+		temp_will_run_state.push("diary");
+	}
+	was_runned_on.push(temp_will_run_state);
+	console.log("was_runned_on ", was_runned_on);
+}, 0, "main_wrapper", { childList: true, subtree: true });
 
 let godpower = document.querySelector("#cntrl > div.pbar.line > div.gp_val.l_val");
 let polygon = document.querySelector("#r_map > div.block_h > h2");
@@ -757,51 +798,6 @@ if (diary != null) {
 	}
 }
 
-// New code by Damir
-/*
-function FindIndexesArray(arr, target) {
-	let indexes = [];
-	arr.forEach(function (v1, i1) {
-		let i2 = v1.findIndex(v2 => v2.includes(target));
-		if (i2 != -1) {
-			indexes.push(i1, i2);
-		}
-	})
-	return indexes;
-}   */
-
-// Функция поиска информации о мини-квесте в БД возвращает массив объектов с записями о найденных совпадениях
-/*function FindTittleInfo(miniQuests, target) {
-	let titleInfo = [];
-	for (let key in miniQuests) {
-		let quests = miniQuests[key]['quests'];
-		quests.forEach(function (blankObj, blankIndex) {
-			let questBlank = blankObj.blank.slice(1);
-			questBlank.forEach(function (quest, questIndex) {
-				if (quest.includes(target)) {
-					let tempObject = {
-						recency: miniQuests[key]['recency'],
-						quest: quest,
-						blankIndex: blankIndex,
-						questBlank: questBlank,
-						questProgress: (questIndex + 1) + '/' + questBlank.length
-					}
-					if (questIndex + 1 < questBlank.length) {
-						tempObject['nextQuest'] = questBlank[questIndex + 1];
-					}
-					if (blankObj.hasOwnProperty('warning')) {
-						tempObject['warning'] = blankObj['warning'];
-					}
-					titleInfo.push(tempObject);
-				}
-			});
-		});
-	}
-	console.log(titleInfo);
-	return titleInfo;
-}
-*/
-
 function FindTittleInfo(miniQuests, target) {
 	let titleInfo = [];
 	for (const miniQuestsObj of Object.values(miniQuests)) {
@@ -811,8 +807,8 @@ function FindTittleInfo(miniQuests, target) {
 				if (quest.includes(target)) {
 					let tempObject = {
 						recency: miniQuestsObj['recency'],
-						quest: quest,
-						questBlank: questBlank,
+						quest,
+						questBlank,
 						questProgress: (questIndex + 1) + '/' + questBlank.length
 					}
 					if (questIndex + 1 < questBlank.length) {
@@ -833,26 +829,23 @@ function FindTittleInfo(miniQuests, target) {
 // Функция проверки на мини-квест и обновления информации о мини-квесте в title
 function UpdateMiniQuestInfo() {
 	let quest_target = document.querySelector("#hk_quests_completed > div.q_name");
-	if (!quest_target.textContent.includes('мини')) {
+	if (!quest_target.textContent.includes(' (мини)')) {
 		quest_target.title = ''; // убираем title, в случае если это не мини-квест
 		return;
 	}
 	let targetQuest = document.querySelector("#hk_quests_completed > div.q_name").textContent.replace(' (мини)', '');
-	//let miniQuests = JSON.parse(localStorage.getItem('AutoGV_miniQuests'));
 	browser.storage.local.get('AutoGV_miniQuestsObj').then(data => {
-		console.log('Ha');
+		console.log('UpdateMiniQuestInfo > inside AutoGV_miniQuestsObj');
 		let titleInfo = FindTittleInfo(data.AutoGV_miniQuestsObj, targetQuest);
 		if (titleInfo != 0) {
-			let questTitle = '';
-			let commonWarning = 0;
-			let commonRecency = 0;
+			let questTitle = '', commonWarning = 0, commonRecency = 0;
 			// просмотр на одинаковые поля titleInfo 
 			for (const match2 of titleInfo) {
 				if (match2.hasOwnProperty('warning')) {
-					commonWarning += 1;
+					commonWarning++;
 				}
-				if (match2.recency = titleInfo[0].recency) {
-					commonRecency += 1;
+				if (match2.recency == titleInfo[0].recency) {
+					commonRecency++;
 				}
 			}
 			// Вывод titleInfo
@@ -880,14 +873,8 @@ function UpdateMiniQuestInfo() {
 			if (commonRecency == titleInfo.length) {
 				questTitle += titleInfo[0].recency;		// старый или новый мини-квест, если одинаково поле у всех квестов
 			}
-			// Старый прямой вывод title без учета одинаковых полей
-			// проверка на наличие совпадений с БД квестов
-			//let questTitle = titleInfo[0].quest;
-			// if (titleInfo[0].hasOwnProperty('nextQuest')) {		// проверка на наличие следующего квеста из ветки
-			// 	questTitle += ' → ' + titleInfo[0].nextQuest;
-			// }
-			// questTitle += ' ' + titleInfo[0]['questProgres'];
-			// questTitle += '\n' + titleInfo[0].recency;			// старый или новый мини-квест
+			questTitle += ' ' + titleInfo[0]['questProgress'];
+			questTitle += '\n' + titleInfo[0].recency;			// старый или новый мини-квест
 
 			// if (titleInfo[0].hasOwnProperty('warning')) {		// проверка на наличие предупреждения о меняющемся порядке квестов
 			// 	questTitle += ' ' + titleInfo[0]['warning'];
@@ -899,42 +886,10 @@ function UpdateMiniQuestInfo() {
 	})
 }
 
-// старый вариант с local.storage
-/*function UpdateMiniQuestInfo() {
-	//document.querySelector("#hk_quests_completed > div.q_name").textContent = 'провести краш тест зимних санок (мини)';
-	let targetQuest = document.querySelector("#hk_quests_completed > div.q_name").textContent.replace(' (мини)', '');
-	let miniQuests  = JSON.parse(localStorage.getItem('AutoGV_miniQuests'));
-	let inds        = FindIndexesArray(miniQuests, targetQuest);
-	let questTitle  = godvilleMiniQuests[inds[0]][inds[1]];
-	if (godvilleMiniQuests[inds[0]].length > inds[1] + 1) {
-		questTitle += ' → ' + godvilleMiniQuests[inds[0]][inds[1] + 1];
-	}
-	document.querySelector('#hk_quests_completed > div.q_name').title = questTitle;
-}
-*/
-// document.addEventListener('DOMContentLoaded', UpdateMiniQuestInfo(), false);
-
-/*document.onreadystatechange = function(){
-	if(document.readyState === 'complete'){
-		console.log('SYK');
-		UpdateMiniQuestInfo();
-	}
- }
-setTimeout(function() { 		
-	console.log('SYK');
-	UpdateMiniQuestInfo(); }, 3000);
-
-*/
-/*
-window.onload = function() {
-	console.log('SYK');
-	UpdateMiniQuestInfo();
- };
- */
-
 // Функция добавления слушателей и обработчиков при изменении квеста и при изменении БД с мини-квестами
 function AddMiniQuestListeners() {
-	//console.log("Зашли ненадолго для лисенерсов");
+	console.log("AddMiniQuestListeners start");
+	//document.querySelector("#hk_quests_completed > div.q_name").textContent = 'укатить кота (мини)';
 	let quest_target = document.querySelector("#hk_quests_completed > div.q_name");
 	let quest_config = {
 		characterData: true,
@@ -943,6 +898,7 @@ function AddMiniQuestListeners() {
 	let miniQuest_callback = function (mutationsList, observer) {
 		UpdateMiniQuestInfo();
 	}
+	UpdateMiniQuestInfo();
 
 	let miniQuest_observer = new MutationObserver(miniQuest_callback);
 	miniQuest_observer.observe(quest_target, quest_config);
