@@ -716,7 +716,7 @@ function UpdateMiniQuestsDB() {
 		}
 		else {
 			// Заход первый раз при загрузке и с БД в памяти
-			document.querySelector("#hk_quests_completed > div.q_name").textContent = 'сделать разминку на минном поле (мини)';
+			//document.querySelector("#hk_quests_completed > div.q_name").textContent = 'сделать разминку на минном поле (мини)';
 			// первичная проверка задания на мини-квест		
 			UpdateMiniQuestInfo();
 			console.log("Check and update mini-quests info first time by onloading page");
