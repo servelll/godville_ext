@@ -716,7 +716,6 @@ function UpdateMiniQuestsDB() {
 		}
 		else {
 			// Заход первый раз при загрузке и с БД в памяти
-			//document.querySelector("#hk_quests_completed > div.q_name").textContent = 'сделать разминку на минном поле (мини)';
 			// первичная проверка задания на мини-квест		
 			UpdateMiniQuestInfo();
 			console.log("Check and update mini-quests info first time by onloading page");
@@ -762,7 +761,6 @@ waitForContents(() => {
 		//AddMonsterInvitingListener();
 		AddFieldHeaderObserver();
 		AddFieldTaskObserver();
-
 		UpdateMiniQuestsDB();
 		AddMiniQuestListeners();
 
@@ -871,12 +869,6 @@ function UpdateMiniQuestInfo() {
 			if (commonRecency == titleInfo.length) {
 				questTitle += titleInfo[0].recency;		// старый или новый мини-квест, если одинаково поле у всех квестов
 			}
-			questTitle += ' ' + titleInfo[0]['questProgress'];
-			questTitle += '\n' + titleInfo[0].recency;			// старый или новый мини-квест
-
-			// if (titleInfo[0].hasOwnProperty('warning')) {		// проверка на наличие предупреждения о меняющемся порядке квестов
-			// 	questTitle += ' ' + titleInfo[0]['warning'];
-			// }
 			document.querySelector('#hk_quests_completed > div.q_name').title = questTitle;		// добавление итогового title
 		}
 		else document.querySelector('#hk_quests_completed > div.q_name').title =
@@ -887,7 +879,6 @@ function UpdateMiniQuestInfo() {
 // Функция добавления слушателей и обработчиков при изменении квеста и при изменении БД с мини-квестами
 function AddMiniQuestListeners() {
 	console.log("AddMiniQuestListeners start");
-	//document.querySelector("#hk_quests_completed > div.q_name").textContent = 'укатить кота (мини)';
 	let quest_target = document.querySelector("#hk_quests_completed > div.q_name");
 	let quest_config = {
 		characterData: true,
@@ -896,8 +887,6 @@ function AddMiniQuestListeners() {
 	let miniQuest_callback = function (mutationsList, observer) {
 		UpdateMiniQuestInfo();
 	}
-	UpdateMiniQuestInfo();
-
 	let miniQuest_observer = new MutationObserver(miniQuest_callback);
 	miniQuest_observer.observe(quest_target, quest_config);
 	browser.storage.onChanged.addListener((changes, area) => {
