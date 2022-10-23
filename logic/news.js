@@ -511,24 +511,26 @@ function AddCondensatorThings() {
 	max_div.appendChild(max_clear_button);
 }
 
-// New code by Damir
+// Coupon things
 function AddCouponThings() {
+	// function for working throw callback with Bingo table elements 
 	function tableElements(callback) {
 		[...document.querySelectorAll("#bgn > tbody > tr > td")].forEach((tableElem) => {
-			console.log(tableElem);
 			callback(tableElem);
 		});
 	}
 
 	function addAts(tableElem) {
-		if (!document.querySelector("#cpn_name").textContent.includes(tableElem.textContent)) {
+		if (document.querySelector("#cpn_name").textContent.includes(tableElem.textContent)) {
 			// Конструктор элемента @
 			const at = document.createElement("a");
 			at.appendChild(document.createTextNode("@"));
 			at.className = 'my_At';
-			at.title = document.querySelector("#cpn_name").textContent;
-			at.onclick = document.querySelector("#coupon_b").click();
-			at.addEventListener("click", () => { tableElements(removeAts) });
+			at.title = document.querySelector("#cpn_name").innerText.replaceAll('\n', ' ');
+			// Pushing at is pushing btn to take coupon
+			at.addEventListener("click", () => {
+				document.querySelector("#coupon_b").click();
+			});
 			const atdiv = document.createElement("div");
 			atdiv.textContent = " (";
 			atdiv.className = 'my_div';
@@ -543,10 +545,22 @@ function AddCouponThings() {
 			tableElem.removeChild(tableElem.querySelector('div'));
 		}
 	}
-	if (document.querySelector("#coupon_b").disabled){
+	// First adding ats
+	if (!document.querySelector("#coupon_b").disabled) {
 		tableElements(addAts);
 	}
+	// Listener on coupon btn for remove ats
 	document.querySelector("#coupon_b").addEventListener('click', () => { tableElements(removeAts) });
+	// Observe table for adding ats if it was recorded by control btns: "bgn_show", "bgn_use"
+	let coupon_callback = function (mutationsList, observer) {
+		console.log("Srabotal observer");
+		if (!document.querySelector("#coupon_b").disabled) {
+			tableElements(addAts);
+		}
+	}
+	let coupon_observer = new MutationObserver(coupon_callback);
+	coupon_observer.observe(document.getElementById("bgn_t"), { childList: true });
+	console.log("AddCouponListener done");
 }
 /*
 	if (getComputedStyle(tableElem).color === 'rgb(0, 0, 255)'){
@@ -559,28 +573,6 @@ function AddCouponThings() {
 	tableElem.addEventListener(onclick, clickCouponBtn());
 
 */
-
-
-
-/*function AddCouponListeners() {
-	//console.log("Зашли ненадолго для лисенерсов");
-	let table_target = document.getElementById("bgn");
-	let table_config = {
-		characterData: true,
-		childList: true,
-		attributes: true
-	}
-	let coupon_callback = function (mutationsList, observer) {
-		UpdateCouponInfo();
-	}
-
-	let coupon_observer = new MutationObserver(coupon_callback);
-	coupon_observer.observe(table_target, table_config);
-	console.log("AddCouponListener done");
-}
-*/
-
-
 window.addEventListener('load', e => {
 	AddBingoListeners();
 	AddCrosswordThings();
