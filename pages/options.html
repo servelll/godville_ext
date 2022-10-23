@@ -25,25 +25,19 @@
 				</div>
 				<div class="new_line">
 					<button id="save">Сохранить</button>
-					<button id="Updade_DB_of_mini_quests">Обновить базу данных мини-квестов</button>
 					<button class="debug" id="load">Load</button>
 					<button class="debug" id="clearOptions">clearOptions</button>
 					<button class="debug" id="Print">PrintOptions (ToBox&Console)</button>
 				</div>
-				</p>
-				</label>Последнее время обновления:</label>
-			</div id="mini_quests_time">
-	</div>
-	</p>
-	<div class="debug" class="new_line">
-		<label class="less_capt">Options</label>
-		<div class="field_content_extented">
-			<textarea class="rounded_field" id="options"></textarea>
-		</div>
-	</div>
-	<div class="g_desc" id="status"></div>
-	</div>
-	</form>
+			</div>
+			<div class="debug" class="new_line">
+				<label class="less_capt">Options</label>
+				<div class="field_content_extented">
+					<textarea class="rounded_field" id="options"></textarea>
+				</div>
+			</div>
+			<div class="g_desc" id="status"></div>
+		</form>
 	</div>
 	<div class="bl_cell block">
 		<div class="bl_capt">Обновление спарсенных данных</div>
@@ -51,30 +45,33 @@
 			<div class="new_line">
 				<label class="l_capt">Последнее обновление списков</label>
 			</div>
-			<div class="new_line">
-				<div class="less_capt">
-					<button id="terrain_lastDate">↻</button>
-					<label class="correct_link" title="https://godville.net/forums/show_topic/2753">
+			<div class="new_line" id="terrain">
+				<div class="less_capt no_padding">
+					<button class="update">↻</button>
+					<button class="clear debug">❌</button>
+					<label class="correct_link last_date" title="https://godville.net/forums/show_topic/2753">
 						местностей</label>
 				</div>
 				<div class="field_content">
 					<label>?</label>
 				</div>
 			</div>
-			<div class="new_line">
-				<div class="less_capt">
-					<button id="seaMonsters_lastDate">↻</button>
-					<label class="correct_link" title="http://godb.gandjubas.de/sea_monsters.php">имен морских
+			<div class="new_line" id="seaMonsters">
+				<div class="less_capt no_padding">
+					<button class="update">↻</button>
+					<button class="clear debug">❌</button>
+					<label class="correct_link last_date" title="http://godb.gandjubas.de/sea_monsters.php">имен морских
 						рыб</label>
 				</div>
 				<div class="field_content">
 					<label>?</label>
 				</div>
 			</div>
-			<div class="new_line">
-				<div class="less_capt">
-					<button id="Miniq_lastDate">↻</button>
-					<label class="correct_link"
+			<div class="new_line" id="Miniq">
+				<div class="less_capt no_padding">
+					<button class="update">↻</button>
+					<button class="clear debug">❌</button>
+					<label class="correct_link last_date"
 						title="https://godville.net/forums/show_topic/2460?page=254#post_1560386">мини-квестов</label>
 				</div>
 				<div class="field_content">
@@ -82,7 +79,6 @@
 				</div>
 			</div>
 		</div>
-	</div>
 	</div>
 
 	<div class="bl_cell block">

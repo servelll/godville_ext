@@ -60,12 +60,17 @@ chrome.runtime.onMessage.addListener(
 let log = [];
 chrome.runtime.onMessage.addListener(
 	function (request, sender, sendResponse) {
-		console.log(request, sender);
-		if (request.command == "print_popup") {
-			log.push(request.text);
-		}
-		if (request.command == "load_log") {
-			sendResponse(log.join("\n"));
+		var error = chrome.runtime.lastError;
+		if (error) {
+			console.error(error);
+		} else {
+			console.log(request, sender);
+			if (request.command == "print_popup") {
+				log.push(request.text);
+			}
+			if (request.command == "load_log") {
+				sendResponse(log.join("\n"));
+			}
 		}
 		return true;
 	}
