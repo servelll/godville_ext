@@ -709,7 +709,7 @@ function waitForContents(callback, level = 0, observer_target_id, observer_confi
 }
 
 function UpdateMiniQuestsDB() {
-	browser.storage.local.get(['AutoGV_miniQuestsObj'], function (result) {
+	browser.storage.local.get(['AutoGV_miniQuests'], function (result) {
 		if (Object.keys(result).length == 0) {
 			fillMiniQuestsTitles(UpdateMiniQuestInfo);	// заполнение и колбеком в конце обновление
 			console.log("Filling mini-quests titles DB to browser local storage and update info about mini-quests in the end");
@@ -830,9 +830,9 @@ function UpdateMiniQuestInfo() {
 		return;
 	}
 	let targetQuest = document.querySelector("#hk_quests_completed > div.q_name").textContent.replace(' (мини)', '');
-	browser.storage.local.get('AutoGV_miniQuestsObj').then(data => {
-		console.log('UpdateMiniQuestInfo > inside AutoGV_miniQuestsObj');
-		let titleInfo = FindTittleInfo(data.AutoGV_miniQuestsObj, targetQuest);
+	browser.storage.local.get('AutoGV_miniQuests').then(data => {
+		console.log('UpdateMiniQuestInfo > inside AutoGV_miniQuests');
+		let titleInfo = FindTittleInfo(data.AutoGV_miniQuests, targetQuest);
 		if (titleInfo != 0) {
 			let questTitle = '', commonWarning = 0, commonRecency = 0;
 			// просмотр на одинаковые поля titleInfo 
@@ -890,7 +890,7 @@ function AddMiniQuestListeners() {
 	let miniQuest_observer = new MutationObserver(miniQuest_callback);
 	miniQuest_observer.observe(quest_target, quest_config);
 	browser.storage.onChanged.addListener((changes, area) => {
-		if (area === 'local' && changes.AutoGV_miniQuestsObj?.newValue) {
+		if (area === 'local' && changes.AutoGV_miniQuests?.newValue) {
 			miniQuest_callback();
 		}
 	});

@@ -342,7 +342,6 @@ async function AddErinomeLogsCheckingActions(wup, wup_title) {
 }
 
 function fillMiniQuestsTitles(callback) {
-
     async function parseMiniQuestsTitles(link) {
         let html = await getPageFromUrl(link);
         let raw_data = html.querySelector("#post-body-1560386").textContent;
@@ -356,11 +355,13 @@ function fillMiniQuestsTitles(callback) {
     function fillMiniQuestsToStorage(miniQuests) {
         const regy = /([А-ЯЁ0-9][^\→]+)(?=(\→|$))/gi;
         const warning = '(в этом мини-квесте часто этапы меняются местами)';
-        let AutoGV_miniQuestsObj = {};
+        let AutoGV_miniQuests = {};
         for (let key in miniQuests) {
-            AutoGV_miniQuestsObj[key] = {
+            console.log(miniQuests[key]);
+            AutoGV_miniQuests[key] = {
                 recency: (key == 'oldQuests') ? 'старый мини-квест' : 'новый мини-квест',
-                quests: miniQuests.key.map(el => {
+                quests: miniQuests[key].map(el => {
+                    let quests = {};
                     if (el.includes(warning)) {
                         quests.warning = warning;
                     }
@@ -369,7 +370,8 @@ function fillMiniQuestsTitles(callback) {
                 }),
             }
         }
-        browser.storage.local.set({ AutoGV_miniQuestsObj });
+        browser.storage.local.set({ AutoGV_miniQuests });
+        SetToStorage("AutoGV_miniQuests_lastDate", new Date().toLocaleString());
     }
 
     parseMiniQuestsTitles("https://godville.net/forums/show_topic/2460?page=254#post_1560386").then(mini_quests => {

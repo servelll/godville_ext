@@ -207,9 +207,8 @@ document.querySelector("#seaMonsters .update").addEventListener('click', e => {
 	});
 	e.preventDefault();
 });
-document.querySelector("#Miniq .update").addEventListener('click', e => {
-	fillMiniQuestsTitles();
-	let d = new Date();
-	Print(`База данных обновлена: ${d.toLocaleString()}`);
+document.querySelector("#AutoGV_miniQuests .update").addEventListener('click', e => {
+	fillMiniQuestsTitles(() => {UpdateFieldLabel(e.target)});
+	// UpdateFieldLabel(e.target);
 	e.preventDefault();
 });
