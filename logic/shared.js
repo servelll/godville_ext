@@ -361,12 +361,12 @@ function fillMiniQuestsTitles(callback) {
             AutoGV_miniQuests[key] = {
                 recency: (key == 'oldQuests') ? 'старый мини-квест' : 'новый мини-квест',
                 quests: miniQuests[key].map(el => {
-                    let quests = {};
+                    let quest = {};
                     if (el.includes(warning)) {
-                        quests.warning = warning;
+                        quest.warning = warning;
                     }
-                    quests.blank = el.match(regy).map(item => item.trim());
-                    return quests;
+                    quest.blank = el.match(regy).map(item => item.trim());
+                    return quest;
                 }),
             }
         }
