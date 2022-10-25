@@ -192,9 +192,7 @@ document.querySelector("#terrain .update").addEventListener('click', e => {
 });
 document.querySelector("#seaMonsters .update").addEventListener('click', e => {
 	let label = e.target.parentNode.querySelector(".correct_link");
-	getPageFromUrl("https://cors-anywhere.herokuapp.com/" + label.title, {
-		headers: { "X-Requested-With": "" }
-	}).then(html => {
+	CorsGetPageFromUrl(label.title).then(html => {
 		console.log(html);
 		let rawText = html.querySelector("body > ol").textContent;
 		let clearedArray = rawText.split("\n").filter(i => i != "").map(i => i.replace(/\(.+\)/g, "").trim());
@@ -208,7 +206,6 @@ document.querySelector("#seaMonsters .update").addEventListener('click', e => {
 	e.preventDefault();
 });
 document.querySelector("#AutoGV_miniQuests .update").addEventListener('click', e => {
-	fillMiniQuestsTitles(() => {UpdateFieldLabel(e.target)});
-	// UpdateFieldLabel(e.target);
+	fillMiniQuestsTitles(() => { UpdateFieldLabel(e.target) });
 	e.preventDefault();
 });

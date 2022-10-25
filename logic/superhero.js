@@ -607,7 +607,6 @@ function AddFieldHeaderObserver() {
 		if (mutationsList != null) {
 			for (let mutation of mutationsList) {
 				console.log(mutation);
-				
 			}
 		}
 		*/

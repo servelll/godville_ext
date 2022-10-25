@@ -99,70 +99,6 @@ function fillPushesAtThisSubstep(index, subindex, submove_owner_letter) {
     //далее, итерация только по submove_owner_letter, subindex и d[subindex] не используем
 }
 
-/*
-function manageErrors(response) {
-    console.log(response);
-    if (!response.ok) {
-        if (response.status == 404) {
-            return false;
-        }
-        throw Error(response.statusText);
-    }
-    return true;
-}
-
-function TestUrlExistAsyncWithNoCorsFetch(url) {
-    return new Promise((resolve, reject) => {
-        try {
-            fetch(url)
-                .then(() => resolve(true))
-                .catch(e => {
-                    console.log(e);
-                    if (e.message.includes("404")) {
-                        resolve(false);
-                    }
-                    reject(e);
-                });
-        } catch (e) {
-            console.log("trycatch: " + e);
-        }
-    });
-}
-
-TestUrlExistAsyncWithNoCorsFetch("https://gv.erinome.net/duels/log/td4dqf");
-TestUrlExistAsyncWithNoCorsFetch("https://gv.erinome.net/duels/log/pye686bsb");
-TestUrlExistAsyncWithNoCorsFetch("https://developesdsdr.mozi");
-*/
-// function ifUrlExist(url, callback) {
-//     let request = new XMLHttpRequest;
-//     request.open('GET', url, true);
-//     request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-//     request.setRequestHeader('Accept', '*/*');
-//     request.onprogress = function (event) {
-//         let status = event.target.status;
-//         let statusFirstNumber = (status).toString()[0];
-//         switch (statusFirstNumber) {
-//             case '2':
-//                 request.abort();
-//                 return callback(true);
-//             default:
-//                 request.abort();
-//                 return callback(false);
-//         };
-//     };
-//     request.send('');
-// };
-
-function UrlExistsAsync(url) {
-    return new Promise(resolve => {
-        var xhr = new XMLHttpRequest();
-        xhr.open('HEAD', url);
-        xhr.onload = function () {
-            resolve(xhr.status != 404);
-        };
-        xhr.send();
-    });
-}
 
 function SetToStorage(key, propertyObj) {
     let a = {};
@@ -181,67 +117,65 @@ function AppendToArrayInStorage(key, value) {
     });
 }
 
+//https://corsproxy.io/
+//working for https://gv.erinome.net/duels/log/x5rlfs, not forking for files
+function UrlExistsAsync(url) {
+    return new Promise((resolve, reject) => {
+        let fetch_url = (document.location.origin != new URL(url).origin) ? "https://corsproxy.io/?" + url : url;
+        fetch(fetch_url, { method: "HEAD" })
+            .then(response => {
+                console.log(response);
+                if (response.status == 500 || response.status == 404 || response.redirected) {
+                    resolve(false);
+                    return;
+                }
+                if (response.ok && response.status == 200) {
+                    resolve(true);
+                    return;
+                }
+                throw new Error('UrlExistsAsync response idk error'); //for future debug
+            });
+    });
+}
 function getPageFromUrl(url, init) {
     return new Promise((resolve, reject) => {
         console.log("getPageFromUrl");
         fetch(url, init).then(response => {
-            console.log(response);
-            return response.text();
+            console.log(response, response.headers);
+            if (response.ok) return response.text();
         }).then(html_text => {
             if (html_text != "") {
                 const parser = new DOMParser();
                 const html = parser.parseFromString(html_text, "text/html");
                 resolve(html);
-            } reject("blank page was loaded");
+            }
+            reject("blank page was loaded");
         }).catch(e => reject(e));
     });
 }
-
-function CorsGetPageFromUrl(url, init) {
-    return new Promise(async (resolve, reject) => {
-        console.log("CorsGetPageFromUrl");
-        for (let i = 0; i < 2; i++) {
-            let cors = "https://cors-anywhere.herokuapp.com/";
-            if (document.location.origin != new URL(url).origin) {
-                if (!url.includes(cors)) url = cors + url;
-                if (init == undefined) init = {};
-                init.headers = { "X-Requested-With": "" };
-            }
-            try {
-                let test_html = await getPageFromUrl(url, init);
-                console.log(test_html);
-                let input = test_html.querySelector("input[name=accessRequest]");
-                if (input != null && i < 1) {
-                    await AskCorsPermission(input.value);
-                } else {
-                    resolve(test_html);
-                }
-            } catch (e) {
-                console.log(e);
-            }
+//https://allorigins.win/
+function CorsGetPageFromUrl(url) {
+    return new Promise((resolve, reject) => {
+        console.log("CorsGetPageFromUrl start");
+        if (document.location.origin != new URL(url).origin) {
+            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`)
+                .then(response => {
+                    if (response.ok) return response.json()
+                    throw new Error('Network response was not ok.')
+                })
+                .then(data => {
+                    console.log(data);
+                    const parser = new DOMParser();
+                    const html = parser.parseFromString(data.contents, "text/html");
+                    resolve(html);
+                });
+        }
+        else {
+            getPageFromUrl(url).then(html => resolve(html));
         }
     });
 }
-
-function AskCorsPermission(access_id) {
-    return new Promise((resolve, reject) => {
-        console.log("AskCorsPermission");
-        let access_url = "https://cors-anywhere.herokuapp.com/corsdemo?accessRequest=" + access_id;
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', access_url);
-        xhr.onload = function () {
-            resolve(xhr.status != 404);
-        };
-        xhr.send();
-    });
-}
-
-CorsGetPageFromUrl("https://cors-anywhere.herokuapp.com/" + "http://godb.gandjubas.de/sea_monsters.php", {
-    headers: { "X-Requested-With": "" }
-}).then(html => {
-    console.log(html);
-});
-
+//supehero.js && last_fight.js
 async function AddErinomeLogsCheckingActions(wup, wup_title) {
     console.log("AddErinomeLogsCheckingActions start");
     let a = wup_title.querySelector("#MyGV_ErinomeLogsCheckRows");
@@ -340,7 +274,7 @@ async function AddErinomeLogsCheckingActions(wup, wup_title) {
         wup_title.appendChild(a);
     }
 }
-
+//supehero.js && options.html
 function fillMiniQuestsTitles(callback) {
     async function parseMiniQuestsTitles(link) {
         let html = await getPageFromUrl(link);

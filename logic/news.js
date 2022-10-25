@@ -201,78 +201,90 @@ async function AddCrosswordThings() {
 	});
 	console.log("AddCrosswordThings done");
 }
-//прогноз//
+
 let forecast = Array.from(document.querySelectorAll(".fc > p")).reduce((sum, i) => sum + i.textContent, "");
-if (forecast.includes("но уточнять его содержимое астрологи отказываются")) {
-	let p = document.createElement("p");
+let unknown_forecast_strings = [
+	"но уточнять его содержимое астрологи отказываются",
+	"в каждом прогнозе должна быть загадка"
+];
+function AddUnknownForecastLinks() {
+	if (unknown_forecast_strings.some(i => forecast.includes(i))) {
+		console.log("AddUnknownForecast inside if");
+		let p = document.createElement("p");
 
-	let a1 = document.createElement("a");
-	a1.textContent = "Форум для неизвестного прогноза";
-	a1.href = "https://godville.net/forums/show_topic/3779?page=last";
+		let a1 = document.createElement("a");
+		a1.textContent = "Форум для неизвестного прогноза";
+		a1.href = "https://godville.net/forums/show_topic/3779?page=last";
+		p.appendChild(a1);
 
-	let a2 = document.createElement("a");
-	a2.textContent = "Google-таблица";
-	a2.href = "https://docs.google.com/spreadsheets/d/18TWoG9vb0ASZxxs90RJ2Gk2D56ln6scGMYlCPW9T8GE/edit#gid=1239959726";
+		p.appendChild(document.createTextNode(" | "));
 
-	let after = document.querySelector(".fc_vote");
-	p.appendChild(a1);
-	p.appendChild(document.createTextNode(" | "));
-	p.appendChild(a2);
-	after.parentNode.insertBefore(p, after);
-	//after.parentNode.insertBefore(document.createElement("br"), after);
+		let a2 = document.createElement("a");
+		a2.textContent = "Google-таблица";
+		a2.href = "https://docs.google.com/spreadsheets/d/18TWoG9vb0ASZxxs90RJ2Gk2D56ln6scGMYlCPW9T8GE/edit#gid=1239959726";
+		p.appendChild(a2);
+
+		let css_after = document.querySelector(".fc_vote");
+		console.log(css_after);
+		css_after.parentNode.insertBefore(p, css_after);
+		//after.parentNode.insertBefore(document.createElement("br"), after);
+	}
 }
+AddUnknownForecastLinks();
 
-//разыскиваемый
-let p_s = document.querySelectorAll("#content div.game div p:not([class]):not([id])");
-let wanted_ps = Array.from(p_s).filter(i => i.parentNode.previousSibling.previousSibling != null &&
-	i.parentNode.parentNode.firstElementChild.textContent == "Разыскиваются");
-console.log(wanted_ps);
-if (Array.from(wanted_ps).some(p => p.textContent.match(new RegExp("достойн.+наград", "g")))) {
-	let div = document.createElement("div");
-	div.style.display = "inline-grid";
+function AddWantedMonsterLinks() {
+	let p_s = document.querySelectorAll("#content div.game div p:not([class]):not([id])");
+	let wanted_ps = Array.from(p_s).filter(i => i.parentNode.previousSibling.previousSibling != null &&
+		i.parentNode.parentNode.firstElementChild.textContent == "Разыскиваются");
+	console.log("AddWantedMonsterLinks", wanted_ps);
+	for (let p of wanted_ps) {
+		if (p.textContent.match(new RegExp("достойн.+наград", "g"))) {
+			let div = document.createElement("div");
+			div.style.display = "inline-grid";
 
-	let a1 = document.createElement("a");
-	a1.textContent = "Форум для рандомной награды";
-	a1.href = "https://godville.net/forums/show_topic/4275?page=last";
-	div.appendChild(a1);
+			let a1 = document.createElement("a");
+			a1.textContent = "Форум для рандомной награды";
+			a1.href = "https://godville.net/forums/show_topic/4275?page=last";
+			div.appendChild(a1);
 
-	let z = document.createElement("z");
-	z.textContent = "Спарсить данные при клике";
-	z.onclick = (event) => {
-		getPageFromUrl("https://godville.net/forums/show_topic/4275?page=last").then(html => {
-			let posts = html.getElementsByClassName("post");
-			let start_date = new Date();
-			start_date.setUTCHours(-3, 6, 0);
-			//meh TODO проверить работу между 0.00 и 0.06 МСК
+			let z = document.createElement("z");
+			z.textContent = "Спарсить данные при клике";
+			z.onclick = (event) => {
+				getPageFromUrl("https://godville.net/forums/show_topic/4275?page=last").then(html => {
+					let posts = html.getElementsByClassName("post");
+					let start_date = new Date();
+					start_date.setUTCHours(-3, 6, 0);
+					//meh TODO проверить работу между 0.00 и 0.06 МСК
 
-			let _text_mas = [];
-			for (const post of posts) {
-				let post_date = Date.parse(post.querySelector("td.author.vcard > div.post_info > div.date > abbr").getAttribute('title'));
-				let post_text = post.querySelector("td.body").textContent.replaceAll("\n", " ").trim();
-				let post_author = post.querySelector("td.author.vcard > div.post_info > span.fn > span.u_link > a").textContent;
-				//для вчерашних шкур в инвентаре, 3 часа
-				if (post_date - start_date < 1000 * 60 * 60 * 3 && post_date > start_date - 1000 * 60 * 60 * 24) {
-					if (_text_mas.length == 0) _text_mas.push("Вчера");
-					_text_mas.push(`${post_author}[${new Date(post_date).toLocaleString("ru-Ru")}]: ${post_text}`);
-				}
-				//основной текст, сегодня
-				if (post_date > start_date) {
-					if (!_text_mas.some(t => t.includes("Сегодня"))) _text_mas.push("Сегодня");
-					_text_mas.push(`${post_author}[${new Date(post_date).toLocaleString("ru-Ru")}]: ${post_text}`);
-				}
+					let _text_mas = [];
+					for (const post of posts) {
+						let post_date = Date.parse(post.querySelector("td.author.vcard > div.post_info > div.date > abbr").getAttribute('title'));
+						let post_text = post.querySelector("td.body").textContent.replaceAll("\n", " ").trim();
+						let post_author = post.querySelector("td.author.vcard > div.post_info > span.fn > span.u_link > a").textContent;
+						//для вчерашних шкур в инвентаре, 3 часа
+						if (post_date - start_date < 1000 * 60 * 60 * 3 && post_date > start_date - 1000 * 60 * 60 * 24) {
+							if (_text_mas.length == 0) _text_mas.push("Вчера");
+							_text_mas.push(`${post_author}[${new Date(post_date).toLocaleString("ru-Ru")}]: ${post_text}`);
+						}
+						//основной текст, сегодня
+						if (post_date > start_date) {
+							if (!_text_mas.some(t => t.includes("Сегодня"))) _text_mas.push("Сегодня");
+							_text_mas.push(`${post_author}[${new Date(post_date).toLocaleString("ru-Ru")}]: ${post_text}`);
+						}
+					}
+					console.log("inside z.onclick", _text_mas);
+					z.innerHTML = _text_mas.map(i => "<p>" + i + "</p>").join("");
+				}).catch(e => console.log(e));
+				event.preventDefault();
 			}
-			z.innerHTML = _text_mas.map(i => "<p>" + i + "</p>").join("");
-		}).catch(e => console.log(e));
-		event.preventDefault();
-	}
-	div.appendChild(z);
+			div.appendChild(z);
 
-	let hero_clearfixes = document.querySelectorAll("#content .hero.clearfix");
-	let filtered_hero_clearfixes = Array.from(hero_clearfixes).filter(i => i.firstElementChild.textContent == "Идёт набор");
-	if (filtered_hero_clearfixes.length == 1) {
-		filtered_hero_clearfixes[0].parentNode.insertBefore(div, filtered_hero_clearfixes[0]);
+			p.parentNode.appendChild(document.createElement("br"));
+			p.parentNode.appendChild(div);
+		}
 	}
 }
+AddWantedMonsterLinks();
 
 //bingo//
 function UpdateBingo() {
@@ -554,21 +566,10 @@ function AddCouponThings() {
 	coupon_observer.observe(document.getElementById("bgn_t"), { childList: true });
 	console.log("AddCouponListener done");
 }
-/*
-	if (getComputedStyle(tableElem).color === 'rgb(0, 0, 255)'){
-			tableElem.style.color = "yellow";
-		}
-	else {
-			tableElem.style.color = "green";	
-		}
-	tableElem.title = document.querySelector("#cpn_name").textContent;
-	tableElem.addEventListener(onclick, clickCouponBtn());
 
-*/
 window.addEventListener('load', e => {
 	AddBingoListeners();
 	AddCrosswordThings();
 	AddCondensatorThings();
 	AddCouponThings();
 });
-
