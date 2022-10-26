@@ -66,50 +66,51 @@ class Polygon {
     d;
     pushes_percents_table = [];
     let_mas = ["A", "B", "C", "D"];
-}
 
-function GetPrevSubIndexs(index, subindex) {
-    let prevsubindex_index, prevsubindex_subindex;
-    if (index == 0) {
-        prevsubindex_index = 0;
-        prevsubindex_subindex = 0;
-    }
-    else if (subindex > 0) {
-        prevsubindex_index = index;
-        prevsubindex_subindex = subindex - 1;
-    } else {
-        prevsubindex_index = index - 1;
-        prevsubindex_subindex = d[index - 1].length - 1;
-    }
-    return { index: prevsubindex_index, subindex: prevsubindex_subindex };
-}
-
-function GetPosAndXPFromD(currentSubStepDValue) {
-    return Object.entries(currentSubStepDValue[2]).filter(([_, value]) => value > 0).map(([boss_letter, boss_xp]) => {
-        const row = Array.from(currentSubStepDValue[1]).filter(j => j.includes(boss_letter) || j.some(k => k.includes(boss_letter)))[0];
-        const try_y = row.indexOf(boss_letter);
-        return [
-            boss_letter,
-            currentSubStepDValue[2][boss_letter],
-            (try_y != -1) ? try_y : row.indexOf(row.filter(k => k.includes(boss_letter))[0]),
-            currentSubStepDValue[1].indexOf(row)
-        ];
-    });
-}
-
-function fillPushesAtThisSubstep(index, subindex, submove_owner_letter) {
-    pushes_percents_table[index][submove_owner_letter] = {};
-
-    let prevsub = GetPrevSubIndexs(index, subindex);
-    if (submove_owner_letter == undefined) {
-        submove_owner_letter = alive_boss_letters[subindex];
-
-
-        pushes_percents_table[index][submove_owner_letter].subindex = subindex;
+    GetPrevSubIndexs(index, subindex) {
+        let prevsubindex_index, prevsubindex_subindex;
+        if (index == 0) {
+            prevsubindex_index = 0;
+            prevsubindex_subindex = 0;
+        }
+        else if (subindex > 0) {
+            prevsubindex_index = index;
+            prevsubindex_subindex = subindex - 1;
+        } else {
+            prevsubindex_index = index - 1;
+            prevsubindex_subindex = d[index - 1].length - 1;
+        }
+        return { index: prevsubindex_index, subindex: prevsubindex_subindex };
     }
 
-    //далее, итерация только по submove_owner_letter, subindex и d[subindex] не используем
+    GetPosAndXPFromD(currentSubStepDValue) {
+        return Object.entries(currentSubStepDValue[2]).filter(([_, value]) => value > 0).map(([boss_letter, boss_xp]) => {
+            const row = Array.from(currentSubStepDValue[1]).filter(j => j.includes(boss_letter) || j.some(k => k.includes(boss_letter)))[0];
+            const try_y = row.indexOf(boss_letter);
+            return [
+                boss_letter,
+                currentSubStepDValue[2][boss_letter],
+                (try_y != -1) ? try_y : row.indexOf(row.filter(k => k.includes(boss_letter))[0]),
+                currentSubStepDValue[1].indexOf(row)
+            ];
+        });
+    }
+
+    fillPushesAtThisSubstep(index, subindex, submove_owner_letter) {
+        pushes_percents_table[index][submove_owner_letter] = {};
+
+        let prevsub = GetPrevSubIndexs(index, subindex);
+        if (submove_owner_letter == undefined) {
+            submove_owner_letter = alive_boss_letters[subindex];
+
+
+            pushes_percents_table[index][submove_owner_letter].subindex = subindex;
+        }
+
+        //далее, итерация только по submove_owner_letter, subindex и d[subindex] не используем
+    }
 }
+
 
 
 function SetToStorage(key, propertyObj) {
