@@ -709,7 +709,8 @@ function waitForContents(callback, level = 0, observer_target_id, observer_confi
 
 function UpdateMiniQuestsDB() {
 	browser.storage.local.get(['AutoGV_miniQuests'], function (result) {
-		if (Object.keys(result).length == 0) {
+		console.log(result);
+		if (Object.keys(result) == 0 || result['AutoGV_miniQuests'].length == 0) {
 			fillMiniQuestsTitles(UpdateMiniQuestInfo);	// заполнение и колбеком в конце обновление
 			console.log("Filling mini-quests titles DB to browser local storage and update info about mini-quests in the end");
 		}
@@ -884,13 +885,13 @@ function AddMiniQuestListeners() {
 		childList: true
 	}
 	let miniQuest_callback = function (mutationsList, observer) {
-		UpdateMiniQuestInfo();
+		UpdateMiniQuestsDB();
 	}
 	let miniQuest_observer = new MutationObserver(miniQuest_callback);
 	miniQuest_observer.observe(quest_target, quest_config);
 	browser.storage.onChanged.addListener((changes, area) => {
 		if (area === 'local' && changes.AutoGV_miniQuests?.newValue) {
-			miniQuest_callback();
+			UpdateMiniQuestInfo();
 		}
 	});
 	console.log("AddMiniQuestListeners done");
