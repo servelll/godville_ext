@@ -291,7 +291,6 @@ function fillMiniQuestsTitles(callback) {
         const warning = '(в этом мини-квесте часто этапы меняются местами)';
         let AutoGV_miniQuests = {};
         for (let key in miniQuests) {
-            console.log(miniQuests[key]);
             AutoGV_miniQuests[key] = {
                 recency: (key == 'oldQuests') ? 'старый мини-квест' : 'новый мини-квест',
                 quests: miniQuests[key].map(el => {

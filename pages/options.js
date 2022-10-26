@@ -152,7 +152,14 @@ function UpdateFieldLabel(button) {
 	});
 
 	chrome.storage.local.get(key, obj2 => {
-		field_label.title = (Object.keys(obj2).length === 0) ? 'undefined' : "Всего записей: " + obj2[key].length + "\n" + obj2[key];
+		if (key == "AutoGV_miniQuests" && Object.keys(obj2).length !== 0) {
+			let a = [];
+			for (let q of Object.values(obj2[key])){
+				a.push(...q?.quests.map(quests_obj => quests_obj?.blank.join('→')));
+			}
+			field_label.title = "Всего записей: " + a.length + "\n" + a;
+		}
+		else field_label.title = (Object.keys(obj2).length === 0) ? 'undefined' : "Всего записей: " + obj2[key].length + "\n" + obj2[key];
 	});
 }
 
