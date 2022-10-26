@@ -709,16 +709,16 @@ function waitForContents(callback, level = 0, observer_target_id, observer_confi
 
 function UpdateMiniQuestsDB() {
 	browser.storage.local.get(['AutoGV_miniQuests'], function (result) {
-		console.log(result);
-		if (Object.keys(result) == 0 || result['AutoGV_miniQuests'].length == 0) {
+		//console.log(result);
+		if (Object.keys(result).length == 0 || result['AutoGV_miniQuests'].length == 0) {
 			fillMiniQuestsTitles(UpdateMiniQuestInfo);	// заполнение и колбеком в конце обновление
-			console.log("Filling mini-quests titles DB to browser local storage and update info about mini-quests in the end");
+			console.log("fetched miniquests data from source");
 		}
 		else {
 			// Заход первый раз при загрузке и с БД в памяти
 			// первичная проверка задания на мини-квест		
 			UpdateMiniQuestInfo();
-			console.log("Check and update mini-quests info first time by onloading page");
+			console.log("used just chrome.storage for miniquests data");
 		}
 	});
 }
