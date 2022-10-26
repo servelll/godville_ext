@@ -1,5 +1,16 @@
 if (chrome) browser = chrome;
 
+//PLS DEFINE ONLY FUNCTIONS TO ESCAPE intersect rewriting shared.js on unknown (superhero\logs) files
+/*
+if (new URL(document.URL).protocol == 'file:') {
+    if (document.querySelector("#main_wrapper")) {
+        //for superhero
+    } else if (document.querySelector("#wrap")) 
+        //for logs
+    }
+}
+*/
+
 function getLocalSelectorOfNode(node) {
     let str = node.nodeName;
     if (node.id) {
@@ -51,10 +62,11 @@ function loadScript(url) {
     request.send();
 }
 
-//полигон
-var d;
-var pushes_percents_table = [];
-let let_mas = ["A", "B", "C", "D"];
+class Polygon {
+    d;
+    pushes_percents_table = [];
+    let_mas = ["A", "B", "C", "D"];
+}
 
 function GetPrevSubIndexs(index, subindex) {
     let prevsubindex_index, prevsubindex_subindex;
@@ -117,7 +129,7 @@ function AppendToArrayInStorage(key, value) {
     });
 }
 
-//https://corsproxy.io/
+//only https://corsproxy.io/
 //working for https://gv.erinome.net/duels/log/x5rlfs, not forking for files
 function UrlExistsAsync(url) {
     return new Promise((resolve, reject) => {
@@ -154,21 +166,45 @@ function getPageFromUrl(url, init) {
     });
 }
 //https://allorigins.win/
+//https://corsproxy.io/
+const cors_urls = [
+    "https://api.allorigins.win/get?url=",
+    "https://corsproxy.io/?"
+];
 function CorsGetPageFromUrl(url) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         console.log("CorsGetPageFromUrl start");
         if (document.location.origin != new URL(url).origin) {
-            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`)
-                .then(response => {
-                    if (response.ok) return response.json()
-                    throw new Error('Network response was not ok.')
-                })
-                .then(data => {
-                    console.log(data);
-                    const parser = new DOMParser();
-                    const html = parser.parseFromString(data.contents, "text/html");
-                    resolve(html);
-                });
+            let another_loop = true, cors_i = cors_urls.values();
+            while (another_loop) {
+                let c = cors_i.next();
+                console.log("while", c.value);
+                if (c.done) break;
+                another_loop = false;
+                try {
+                    await fetch(c.value + encodeURIComponent(url))
+                        .then(response => {
+                            console.log(response);
+                            if (response.ok) return c.value.includes("https://api.allorigins.win/") ? response.json() : response.text();
+                            if (response.status >= 500 && response.status <= 526) {
+                                another_loop = true;
+                            }
+                            throw new Error('Network response was not ok.');
+                        })
+                        .then(data => {
+                            //console.log(data);
+                            const parser = new DOMParser();
+                            const html = parser.parseFromString(c.value.includes("https://api.allorigins.win/") ? data.contents : data, "text/html");
+                            resolve(html);
+                        }).catch(e => {
+                            another_loop = true;
+                            console.log("promise catch", e);
+                        });
+                } catch (e) {
+                    another_loop = true;
+                    console.log(e);
+                }
+            }
         }
         else {
             getPageFromUrl(url).then(html => resolve(html));

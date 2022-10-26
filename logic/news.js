@@ -88,7 +88,7 @@ async function AddCrosswordThings() {
 
 	var pos_mas = [];
 	var accuracy_level = 0;
-	const url = chrome.runtime.getURL('./parsed_words_for_crossword.txt');
+	const url = chrome.runtime.getURL('parsed_words_for_crossword.txt');
 	let response = await fetch(url);
 	let data = await response.text();
 	let diff_types_pos = [...data.matchAll(/^А.+/gim)];
