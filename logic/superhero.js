@@ -709,7 +709,7 @@ function waitForContents(callback, level = 0, observer_target_id, observer_confi
 
 function UpdateMiniQuestsDB() {
 	browser.storage.local.get(['AutoGV_miniQuests'], function (result) {
-		if (Object.keys(result).length == 0) {
+		if (Object.keys(result['AutoGV_miniQuests']).length == 0) {
 			fillMiniQuestsTitles(UpdateMiniQuestInfo);	// заполнение и колбеком в конце обновление
 			console.log("Filling mini-quests titles DB to browser local storage and update info about mini-quests in the end");
 		}
@@ -894,4 +894,27 @@ function AddMiniQuestListeners() {
 		}
 	});
 	console.log("AddMiniQuestListeners done");
+}
+
+// Pet's paws
+function getPageFromLink(link) {
+	return new Promise((resolve, reject) => {
+		fetch(link, init).then(responce => {
+			if (responce.ok) {
+				console.log(responce.text());
+			}	
+		})
+		console.log('AAAAA');
+		resolve(2);
+	})
+
+}
+
+
+function fillPetsDBtoStorage() {
+	getPageFromLink("https://wiki.godville.net/%D0%9F%D0%B8%D1%82%D0%BE%D0%BC%D0%B5%D1%86").then(raw_data => {
+		console.log(raw_data);
+
+	})
+
 }
