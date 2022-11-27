@@ -27,6 +27,10 @@ body {
     padding-right: 2em;
 }
 
+.correct_link {
+    cursor: pointer;
+}
+
 .no_padding {
     padding: 0;
 }

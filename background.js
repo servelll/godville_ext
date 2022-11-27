@@ -76,10 +76,10 @@ chrome.runtime.onMessage.addListener(
 	}
 );
 
-function PrintStorage() {
-	chrome.storage.local.get(object => {
+function PrintStorage(key) {
+	chrome.storage.local.get(key, obj => {
 		if (!chrome.runtime.error) {
-			console.log("local = ", object);
+			console.log(key ?? "chrome.storage.local =", obj);
 		} else {
 			console.log(chrome.runtime.error);
 		}
@@ -92,12 +92,6 @@ function SetToStorage(propertyName, propertyObj) {
 	chrome.storage.local.set(a);
 }
 
-function GetByStorage(key) {
-	chrome.storage.local.get(key, obj => {
-		console.log(obj[key]);
-	});
-}
-
 function RemoveKeyFromStorage(key) {
 	chrome.storage.local.remove(key, function () {
 		var error = chrome.runtime.lastError;
@@ -107,4 +101,5 @@ function RemoveKeyFromStorage(key) {
 	});
 }
 
-console.log("commands (write right HERE): PrintStorage(), SetToStorage(key, obj), GetByStorage(key), RemoveKeyFromStorage(key/[])");
+console.log("commands (write right HERE): PrintStorage()/PrintStorage(key), SetToStorage(key, obj), RemoveKeyFromStorage(key/[])");
+PrintStorage();

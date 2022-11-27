@@ -83,8 +83,7 @@ async function AddCrosswordThings() {
 	but.style = "margin: 10px";
 	let cr = document.querySelector("#cross_block");
 	cr.style = "text-align: center";
-	let cr2 = document.querySelector("#twl_wrap");
-	cr.insertBefore(but, cr2.parentNode);
+	cr.insertBefore(but, document.querySelector("#cross_block form"));
 
 	var pos_mas = [];
 	var accuracy_level = 0;
@@ -105,7 +104,7 @@ async function AddCrosswordThings() {
 	but.addEventListener("click", async function () {
 		let time = new Date();
 		if (time.getUTCHours() == 21 && time.getUTCMinutes() > 4 && time.getUTCMinutes() < 9) {
-			alert("Слишком ранняя разгадка! Подождите до .10 минут");
+			alert("Слишком ранняя разгадка! Подождите хотя бы до .9 минут");
 			return;
 		}
 
@@ -134,7 +133,7 @@ async function AddCrosswordThings() {
 					let indexFirst = (accuracy_level > 1) ? 0 : pos_mas[num];
 					let indexLast = (accuracy_level > 1) ? pos_mas[pos_mas.length - 1] : pos_mas[num + 1];
 					source = data.substring(indexFirst, indexLast);
-					if (accuracy_level < 2 && i.value.includes('Жирный')) i.total_regex_mask += "(?=\|\(.*bold.*\))";
+					if (accuracy_level < 2 && i.value.includes('Жирный')) i.total_regex_mask += "(?=\|\(.*жирный.*\))";
 				}
 
 				if (source != undefined) {
@@ -199,6 +198,14 @@ async function AddCrosswordThings() {
 			else but.title = `Уровень ${accuracy_level} (2+): Поиск по маске во всем файле и игнорирование доп свойств (жирный трофей/сильный монстр)`;
 		}
 	});
+
+	//вешаем листенер для детекта ошибок с сервера
+	document.getElementById("crossword_submit")?.addEventListener("click", (e) => {
+		if (document.querySelectorAll("#cross_tbl"))
+			but.title += "\n";
+		e.preventDefault();
+	});
+
 	console.log("AddCrosswordThings done");
 }
 
@@ -458,16 +465,15 @@ function AddCondensatorThings() {
 			}
 
 			if (Check_conditions()) {
-				DoActions();
 				//TODO параметр уставки из настроек
 				setTimeout(function () {
 					if (Check_conditions()) {
 						DoActions();
 					}
-				}, 1500);
+				}, 1000);
 				//200, 500 мало
 				//на 800 редко
-				//1000 норм, но иногда не срабатывает
+				//1000 норм, но иногда не срабатывает //проверить, может, дело было в ошибке??
 				//1500 ?
 			}
 		}

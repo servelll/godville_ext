@@ -111,23 +111,47 @@ class Polygon {
     }
 }
 
+async function MakingUniqueArrayInStorage(key, another_array) {
+    let obj = await chrome.storage.local.get(key);
+    if (!obj) return {};
+    let dict = obj[key];
+    let unique_array = Array.from(new Set(dict));
+    if (key == 'MyGV_NotLoadedLogs' && another_array) {
+        unique_array = unique_array.filter(m_id => !another_array.includes(m_id));
+        unique_array = unique_array.filter(m_id => !m_id.includes("https://godville.net"));
+    }
 
-
-function SetToStorage(key, propertyObj) {
-    let a = {};
-    a[key] = propertyObj;
-    chrome.storage.local.set(a);
+    SetToStorage(key, unique_array);
+    return unique_array;
 }
 
-function AppendToArrayInStorage(key, value) {
-    chrome.storage.local.get(key, obj => {
-        if (obj[key] != undefined) {
-            obj[key].push(value);
-        } else {
-            obj[key] = [];
-        }
-        SetToStorage(key, obj[key]);
-    });
+async function SetToStorage(key, propertyObj) {
+    let a = {};
+    a[key] = propertyObj;
+    await chrome.storage.local.set(a);
+}
+
+async function AppendToArrayInStorage(key, value) {
+    let obj = (await chrome.storage.local.get(key)) ?? {};
+    if (!obj[key]) {
+        obj[key] = [];
+        obj[key].push(value);
+        console.log("Setted first item of dictionary:", key, "; value:", value);
+    } else if (!obj[key].includes(value)) {
+        console.log("Added to key:", key, "; value:", value);
+        obj[key].push(value);
+    }
+
+    await SetToStorage(key, obj[key]);
+}
+
+async function RemoveFromArrayInStorage(key, value) {
+    let obj = await chrome.storage.local.get(key);
+    if (obj && obj[key]) {
+        console.log("Removing all key-value pairs in dict, or trying, by key:", key, "; value:", value);
+        obj[key] = obj[key].filter(i => i != value);
+        await SetToStorage(key, obj[key]);
+    }
 }
 
 //only https://corsproxy.io/
@@ -169,8 +193,11 @@ function getPageFromUrl(url, init) {
 //https://allorigins.win/
 //https://corsproxy.io/
 const cors_urls = [
-    "https://api.allorigins.win/get?url=",
-    "https://corsproxy.io/?"
+    "https://tranquil-oasis-11167.herokuapp.com/",
+    "https://api.allorigins.win/get?url=", //only GET & json output!
+    "https://corsproxy.io/?", //* request modes, but only without video
+    //"https://justcors.com/ https://justcors.com/tl_5c69dec/" //need autorization
+    //"https://cors-anywhere.herokuapp.com/corsdemo https://cors-anywhere.herokuapp.com/" //need autorization + requiered { headers: { 'x-requested-with': "" } }
 ];
 function CorsGetPageFromUrl(url) {
     return new Promise(async (resolve, reject) => {
@@ -183,7 +210,10 @@ function CorsGetPageFromUrl(url) {
                 if (c.done) break;
                 another_loop = false;
                 try {
-                    await fetch(c.value + encodeURIComponent(url))
+                    let params;
+                    if (c.value.includes(".herokuapp.com")) params = { headers: { "x-requested-with": "" } };
+                    //encodeURIComponent(
+                    await fetch(c.value + url, params)
                         .then(response => {
                             console.log(response);
                             if (response.ok) return c.value.includes("https://api.allorigins.win/") ? response.json() : response.text();
@@ -196,6 +226,9 @@ function CorsGetPageFromUrl(url) {
                             //console.log(data);
                             const parser = new DOMParser();
                             const html = parser.parseFromString(c.value.includes("https://api.allorigins.win/") ? data.contents : data, "text/html");
+                            let cors = html.createElement('s');
+                            cors.setAttribute('href', c.value);
+                            html.head.append(cors);
                             resolve(html);
                         }).catch(e => {
                             another_loop = true;
@@ -213,103 +246,213 @@ function CorsGetPageFromUrl(url) {
     });
 }
 //supehero.js && last_fight.js
-async function AddErinomeLogsCheckingActions(wup, wup_title) {
+async function AddErinomeLogsCheckingActions(wup, after_node) {
+
+    function MarkRow(row_obj, url_exist, link) {
+        //console.log("MarkRow", row_obj, url_exist);
+        let new_text = `[${url_exist ? '+' : '-'}]`;
+        let a = row_obj.querySelector("a");
+        if (!a) {
+            a = document.createElement("a");
+            a.setAttribute("href", link);
+            a.style.textDecoration = "none";
+            a.onclick = (e) => {
+                window.open(link, '_blank');
+                e.preventDefault();
+            }
+            a.textContent = new_text;
+            row_obj.prepend(a, " ");
+        } else if (new_text != a.textContent) {
+            a.textContent = "[+/-]";
+        } else {
+            a.textContent = new_text;
+        }
+        return a;
+    }
+
     console.log("AddErinomeLogsCheckingActions start");
-    let a = wup_title.querySelector("#MyGV_ErinomeLogsCheckRows");
-    if (a == null) {
-        //console.log(wup);
-        //console.log(wup.innerHTML);
-        let dom_arr = (wup != undefined) ?
-            Array.from(wup.querySelectorAll(".wup-content > div > div > .wl_line > .wl_ftype > a") ?? []) :
-            Array.from(wup_title.parentNode.querySelectorAll("tr td a") ?? []);
+    let dom_arr = () => wup ?
+        Array.from(wup.querySelectorAll(".wup-content > div > div > .wl_line > .wl_ftype > a") ?? []) : //popup
+        Array.from(after_node.parentNode.querySelectorAll("tr > td:nth-child(2) > a") ?? []);  //last_fight
+    let dom_saved, dom_unsaved, saved_array, unsaved_array;
 
-        //initialization
-        let checked_obj = await chrome.storage.local.get('ErinomeLogs_AlreadyChecked');
-        let saved = (checked_obj['ErinomeLogs_AlreadyChecked'] ?? {}).saved;
-        let saved_array = Array.from(saved ?? []);
-        if (saved != undefined && saved_array.length > 0) {
-            console.log("saved_array", saved_array);
-            for (const i of saved_array) {
+    let LogsCheck_container = document.createElement("div");
+    LogsCheck_container.className = "wl_line";
+    LogsCheck_container.style.display = "flex";
+    LogsCheck_container.style.minWidth = "280px";
+    LogsCheck_container.style.justifyContent = "center";
+    LogsCheck_container.style.gap = "10px";
+    LogsCheck_container.style.flexWrap = "wrap";
 
-            }
+    LogsCheck_container.append("По строкам: ")
 
-            //delete old records > 3 month
-        }
-        let unsaved = (checked_obj['ErinomeLogs_AlreadyChecked'] ?? {}).unsaved;
-        let unsaved_array = Array.from(unsaved ?? []);
-        if (unsaved != undefined && unsaved_array.length > 0) {
-            console.log("unsaved_array", unsaved_array);
-            for (const i of unsaved_array) {
+    let z_plus = document.createElement("z");
+    z_plus.title = "Загруженных логов";
+    LogsCheck_container.appendChild(z_plus);
 
-            }
+    let z_minus = document.createElement("z");
+    z_minus.title = "Не загруженных логов";
+    LogsCheck_container.appendChild(z_minus);
 
-            //delete old records > 1 week
-        }
-
-        let a_plus = document.createElement("z");
-        a_plus.title = "Загруженных логов";
-        a_plus.id = "MyGV_LoadedLogs";
-        wup_title.appendChild(a_plus);
-
-        let a_minus = document.createElement("z");
-        a_minus.title = "Не загруженных логов";
-        a_minus.id = "MyGV_NotLoadedLogs";
-        wup_title.appendChild(a_minus);
-
-        let a_unknown = document.createElement("z");
-        a_unknown.title = "Не проверенных логов";
-        a_unknown.id = "MyGV_UnknownLogs";
-        wup_title.appendChild(a_unknown);
-
-        wup_title.appendChild(document.createTextNode("/ TOTAL"));
-
-        let a_total = document.createElement("z");
-        a_total.title = "Всего логов";
-        a_total.id = "MyGV_TotalLogs";
-        wup_title.appendChild(a_total);
-
-        if (wup == undefined) {
-            a_plus.style.margin = "0 7px";
-            a_minus.style.margin = "0 7px 0 0";
-            a_unknown.style.margin = "0 7px 0 0";
-            a_total.style.margin = "0 7px";
-        }
-
-        function UpdateText() {
-            a_plus.textContent = saved_array.length;
-            a_minus.textContent = unsaved_array.length;
-            a_unknown.textContent = dom_arr.length - saved_array.length - unsaved_array.length;
-            a_total.textContent = dom_arr.length;
-        }
+    let z_unknown = document.createElement("z");
+    z_unknown.style.color = "#199BDC";
+    z_unknown.style.cursor = "pointer";
+    z_unknown.title = "Не проверенных логов\nНажмите, чтобы очистить от существующих в 'MyGV_LoadedLogs' элементов массива 'MyGV_NotLoadedLogs',\nот дублей 'MyGV_NotLoadedLogs'/'MyGV_LoadedLogs'";
+    z_unknown.onclick = async () => {
+        z1.started = false;
+        saved_array = await MakingUniqueArrayInStorage('MyGV_LoadedLogs');
+        unsaved_array = await MakingUniqueArrayInStorage('MyGV_NotLoadedLogs', saved_array);
         UpdateText();
+    }
+    LogsCheck_container.appendChild(z_unknown);
 
-        a = document.createElement("z");
-        a.textContent = "[?]";
-        //a.title = "Всего элементов в этом popup'e; Клик -> старт проверки";
-        a.id = "MyGV_ErinomeLogsCheckRows";
-        a.title = "Проверить, загружены ли логи на https://gv.erinome.net/duels/log";
-        a.onclick = async function () {
-            a.title = "Click to stop";
-            a.textContent = `[${dom_arr.length}]`;
-            for (const x of dom_arr) {
-                let date = x.parentNode.parentNode.firstElementChild;
-                //skip already executed
-                if (!date.textContent.includes('[')) {
-                    if (start_flag) {
-                        start_flag = false;
-                        return;
-                    }
-                    let gv_shortpath = x.href.replace("https://godville.net", "");
-                    let id = gv_shortpath.replace("/duels/log/", "");
-                    let link = "https://gv.erinome.net" + gv_shortpath;
-                    let b = await UrlExistsAsync(link);
-                    date.textContent = `[${b ? "+" : "-"}] ${date.textContent}`;
-                    AppendToArrayInStorage("MyGV_LoadedLogs", { date_str: date.textContent, id });
+    LogsCheck_container.appendChild(document.createTextNode("/"));
+
+    let z_total = document.createElement("z");
+    z_total.title = "Всего логов";
+    LogsCheck_container.appendChild(z_total);
+
+    function UpdateText() {
+        z_plus.textContent = dom_saved.length + "[+]";
+        z_minus.textContent = dom_unsaved.length + "[-]";
+        let dom_arr_buffer = dom_arr();
+        z_total.textContent = dom_arr_buffer.length;
+        z_unknown.textContent = dom_arr_buffer.length - dom_saved.length - dom_unsaved.length + "[?]";
+    }
+
+    async function DrawUI(diff_id_arr, key) {
+        var time = performance.now();
+        if (diff_id_arr && key) {
+            for (d_id of diff_id_arr) {
+                let filtered = dom_arr().find(a => a.href.includes(d_id));
+                if (filtered) {
+                    let date_td = filtered.parentNode.parentNode.firstElementChild;
+                    let bool = key == 'MyGV_LoadedLogs';
+                    let a = MarkRow(date_td, bool, "https://gv.erinome.net/duels/log/" + d_id);
+                    a.style.backgroundColor = "Aqua";
+                    a.title = "Появились новые данные";
+                    if (bool) dom_saved.push(d_id); else dom_unsaved.push(d_id);
+                }
+            }
+        } else {
+            async function ActionsWithStoragedAbstract(propertyText) {
+                //this taking some time ~300ms
+                let checked_obj = (await chrome.storage.local.get(propertyText)) ?? {};
+                let array = Array.from(checked_obj[propertyText] ?? []);
+                return array;
+            }
+            //get Arrays 
+            saved_array = await ActionsWithStoragedAbstract('MyGV_LoadedLogs');
+            unsaved_array = await ActionsWithStoragedAbstract('MyGV_NotLoadedLogs');
+
+            //Draw ALL [+]/[-]
+            dom_saved = [], dom_unsaved = [];
+            for (const x of dom_arr()) {
+                let gv_shortpath = x.href.replace("https://godville.net", "");
+                let x_id = gv_shortpath.replace("/duels/log/", "");
+                let bool = saved_array.includes(x_id);
+                if (bool || unsaved_array.includes(x_id)) {
+                    let date_td = x.parentNode.parentNode.firstElementChild;
+                    MarkRow(date_td, bool, "https://gv.erinome.net/duels/log/" + x_id);
+                    if (bool) dom_saved.push(x_id); else dom_unsaved.push(x_id);
                 }
             }
         }
-        wup_title.appendChild(a);
+        UpdateText();
+        time = performance.now() - time;
+        console.log(`Время выполнения DrawUI(${diff_id_arr}, ${key}) = ${time.toFixed(1)}ms`);
     }
+    await DrawUI();
+
+    async function CheckLogsActions(z, UIArr) {
+        z.processing = !z.processing;
+        z.setTitle();
+        if (!z.processing) {
+            return;
+        } else {
+            z.textContent = "[||]";
+            //a.textContent = `[${dom_arr.length}]`;
+            for (const x of UIArr) {
+                if (!z.processing) {
+                    return;
+                }
+                let tr = x.parentNode.parentNode;
+                tr.style.backgroundColor = 'yellow';
+                let date_obj = tr.firstElementChild;
+                let gv_shortpath = x.href.replace("https://godville.net", "");
+                let id = gv_shortpath.replace("/duels/log/", "");
+                let link = "https://gv.erinome.net" + gv_shortpath;
+                let b = await UrlExistsAsync(link);
+                AppendToArrayInStorage(b ? "MyGV_LoadedLogs" : "MyGV_NotLoadedLogs", id);
+                if (b) {
+                    RemoveFromArrayInStorage("MyGV_NotLoadedLogs", id);
+                    dom_saved = dom_saved.filter(i => i !== id);
+                } else {
+                    unsaved_array = unsaved_array.filter(i => i !== id);
+                }
+                MarkRow(date_obj, b, link);
+                UpdateText();
+                tr.style.backgroundColor = '';
+            }
+            if (!z.title.includes("перепроверять")) z.remove();
+            z.processing = false;
+            z.textContent = z.title.includes("перепроверять") ? "[>>]" : "[>]";
+        }
+    }
+
+    let z1 = document.createElement("z");
+    z1.setAttribute("style", z_unknown.getAttribute("style"));
+    z1.textContent = "[>]";
+    z1.setTitle = function () {
+        this.title = this.processing ?
+            "Нажмите для остановки проверки" :
+            "Проверить, загружены ли логи на https://gv.erinome.net/duels/log (игнорировать [-]/[+])";
+    }
+    z1.setTitle();
+    //skip ALL already executed
+    z1.onclick = () => CheckLogsActions(z1, dom_arr().filter(x => {
+        let tr = x.parentNode.parentNode;
+        return !tr.firstElementChild.textContent.includes('['); //исключаем [+] и [-]
+    }));
+    LogsCheck_container.appendChild(z1);
+
+    let z2 = document.createElement("z");
+    z2.textContent = "[>>]";
+    z2.setAttribute("style", z_unknown.getAttribute("style"));
+    z2.setTitle = function () {
+        this.title = this.processing ?
+            "Нажмите для остановки проверки" :
+            "Проверить, загружены ли логи на https://gv.erinome.net/duels/log (перепроверяем все [-], игнорируем [+])";
+    }
+    z2.setTitle();
+    z2.onclick = () => CheckLogsActions(z2, dom_arr().filter(x => {
+        let tr = x.parentNode.parentNode;
+        return !tr.firstElementChild.textContent.includes('[+]'); //исключаем только [+]
+    }));
+    LogsCheck_container.appendChild(z2);
+
+    after_node.after(LogsCheck_container);
+
+    //listener
+    chrome.storage.onChanged.addListener((changes, area) => {
+        console.log("Change in storage area: " + area, changes);
+        for (let ch_key of Object.keys(changes)) {
+            if (ch_key == "MyGV_NotLoadedLogs" || ch_key == "MyGV_LoadedLogs") {
+                let new_arr = Array.from(changes[ch_key].newValue);
+                let old_arr = Array.from(changes[ch_key].oldValue);
+                let add_arr = new_arr.filter(id => !old_arr.includes(id));
+                if (add_arr && add_arr.length > 0) {
+                    //console.log(ch_key, add_arr);
+                    DrawUI(add_arr, ch_key);
+                    if (ch_key == 'MyGV_LoadedLogs') {
+                        saved_array = changes[ch_key].newValue;
+                    } else {
+                        unsaved_array = changes[ch_key].newValue;
+                    }
+                }
+            }
+        }
+    });
 }
 //supehero.js && options.html
 function fillMiniQuestsTitles(callback) {
@@ -329,7 +472,9 @@ function fillMiniQuestsTitles(callback) {
         let AutoGV_miniQuests = {};
         for (let key in miniQuests) {
             AutoGV_miniQuests[key] = {
-                recency: (key == 'oldQuests') ? 'старый мини-квест' : 'новый мини-квест',
+                recency: (key == 'oldQuests') ?
+                    'старый мини-квест (после битвы с боссами в старых миниках – покрасневший герой не идет в город на полный цикл)' :
+                    'новый мини-квест (Если выйти с босса или банды нового миника на красном или дохлым – гарантирован полный цикл)',
                 quests: miniQuests[key].map(el => {
                     let quest = {};
                     if (el.includes(warning)) {
@@ -346,7 +491,7 @@ function fillMiniQuestsTitles(callback) {
 
     parseMiniQuestsTitles("https://godville.net/forums/show_topic/2460?page=254#post_1560386").then(mini_quests => {
         fillMiniQuestsToStorage(mini_quests);
-        console.log('Filling mini quests to browser storage');
+        console.log('Setting mini quests, to browser storage');
         callback();
     });
 }

@@ -2,6 +2,46 @@
 //https://gv.erinome.net/duels/log/apq4exf4c (forever, find any at https://gv.erinome.net/duels/log)
 //https://godville.net/duels/log/apq4exf4c (expired 3 month)
 //https://gdvl.tk/duels/log/apq4e
+let id = document.location.pathname.replaceAll("/duels/log/", "");
+if (document.location.href.includes("https://gv.erinome.net/duels/log/")) {
+	let propertyText = document.title.includes("404 Not Found") ? 'MyGV_NotLoadedLogs' : 'MyGV_LoadedLogs';
+	AppendToArrayInStorage(propertyText, id);
+	if (propertyText == 'MyGV_LoadedLogs') RemoveFromArrayInStorage("MyGV_NotLoadedLogs", id);
+} else if (document.location.href.includes("https://godville.net/duels/log/")) {
+	let a = document.createElement("a");
+	a.textContent = "[?]";
+	a.title = "Проверить существование лога на gv.erinome.net/";
+	a.onclick = async (e) => {
+		let link = "https://gv.erinome.net/duels/log/" + id;
+		let b = await UrlExistsAsync(link);
+		a.textContent = b ? "[+]" : "[-]";
+		AppendToArrayInStorage(b ? "MyGV_LoadedLogs" : "MyGV_NotLoadedLogs", id);
+		if (b) RemoveFromArrayInStorage("MyGV_NotLoadedLogs", id);
+		a.onclick = null;
+		a.title = "";
+		e.preventDefault();
+	}
+	chrome.storage.local.get("MyGV_LoadedLogs").then(obj => {
+		if (!obj) return;
+		if (obj["MyGV_LoadedLogs"].includes(id)) {
+			a.textContent = "[+]";
+			a.title = "";
+			a.onclick = null;
+			return;
+		}
+		chrome.storage.local.get("MyGV_NotLoadedLogs").then(obj2 => {
+			if (!obj2) return;
+			if (obj2["MyGV_NotLoadedLogs"].includes(id)) {
+				a.textContent = "[-]";
+				a.title = "";
+				a.onclick = null;
+			}
+		});
+	});
+
+	document.querySelector(".lastduelpl_f").lastChild.append(" ");
+	document.querySelector(".lastduelpl_f").lastChild.appendChild(a);
+}
 
 class PolygonLog {
 	directions_symbols = ["⇡", "⇠", "", "⇢", "⇣"];

@@ -154,7 +154,7 @@ function UpdateFieldLabel(button) {
 	chrome.storage.local.get(key, obj2 => {
 		if (key == "AutoGV_miniQuests" && Object.keys(obj2).length !== 0) {
 			let a = [];
-			for (let q of Object.values(obj2[key])){
+			for (let q of Object.values(obj2[key])) {
 				a.push(...q?.quests.map(quests_obj => quests_obj?.blank.join('→')));
 			}
 			field_label.title = "Всего записей: " + a.length + "\n" + a;
@@ -163,14 +163,15 @@ function UpdateFieldLabel(button) {
 	});
 }
 
-//label-click actions && afterloading actions
 for (const label of document.getElementsByClassName("correct_link")) {
+	//caption label-click actions
 	label.addEventListener("click", e => {
 		window.open(e.target.title, '_blank');
 		e.preventDefault();
 	});
 
 	let caption = label.parentNode;
+	//initial actions - setting title of right label (caption)
 	UpdateFieldLabel(caption.querySelector(".update"));
 }
 
@@ -187,10 +188,13 @@ for (const button of document.getElementsByClassName("clear")) {
 
 //update buttons click() actions
 document.querySelector("#terrain .update").addEventListener('click', e => {
+	let time = performance.now();
 	let label = e.target.parentNode.querySelector(".correct_link");
 	getPageFromUrl(label.title).then(html => {
 		let rawText = html.querySelector("#post-body-698233 > ol").textContent;
-		let clearedArray = rawText.split("\n\t").filter(i => i != "").map(i => i.replaceAll("\n", ""));
+		let clearedArray = rawText.split("\n\t").filter(i => i != "").map(i => i.replaceAll("\n", "").replaceAll("*", "").replaceAll(/\(.+\)/g, "").trim());
+		if (e.target.title) e.target.title += "\n";
+		e.target.title += `direct request (${(performance.now() - time).toFixed(1)}ms)`;
 		SetToStorage("terrain_lastDate", new Date().toLocaleString());
 		SetToStorage("terrain", clearedArray);
 		UpdateFieldLabel(e.target);
@@ -198,12 +202,15 @@ document.querySelector("#terrain .update").addEventListener('click', e => {
 	e.preventDefault();
 });
 document.querySelector("#seaMonsters .update").addEventListener('click', e => {
+	let time = performance.now();
 	let label = e.target.parentNode.querySelector(".correct_link");
 	CorsGetPageFromUrl(label.title).then(html => {
 		console.log(html);
 		let rawText = html.querySelector("body > ol").textContent;
 		let clearedArray = rawText.split("\n").filter(i => i != "").map(i => i.replace(/\(.+\)/g, "").trim());
 		console.log(clearedArray);
+		if (e.target.title) e.target.title += "\n";
+		e.target.title += `loaded with CORS-proxy (${(performance.now() - time).toFixed(1)}ms) ${html.querySelector("s").getAttribute("href")}`;
 		SetToStorage("seaMonsters_lastDate", new Date().toLocaleString());
 		SetToStorage("seaMonsters", clearedArray);
 		UpdateFieldLabel(e.target);
@@ -213,6 +220,32 @@ document.querySelector("#seaMonsters .update").addEventListener('click', e => {
 	e.preventDefault();
 });
 document.querySelector("#AutoGV_miniQuests .update").addEventListener('click', e => {
-	fillMiniQuestsTitles(() => { UpdateFieldLabel(e.target) });
+	let time = performance.now();
+	fillMiniQuestsTitles(() => {
+		UpdateFieldLabel(e.target);
+		if (!e.target.title) e.target.title += "\n";
+		e.target.title += `loaded with CORS-proxy (${(performance.now() - time).toFixed(1)}ms)`;
+	});
 	e.preventDefault();
 });
+
+for (let button of document.getElementsByClassName("append")) {
+	UpdateFieldLabel(button); //for initial
+
+	let line = button.parentNode.parentNode;
+	let key = line.id;
+	button.addEventListener('click', async (e) => {
+		await AppendToArrayInStorage(key, "y1dxtz2");
+		UpdateFieldLabel(button);
+		e.preventDefault();
+	});
+}
+for (let button of document.getElementsByClassName("delete")) {
+	let line = button.parentNode.parentNode;
+	let key = line.id;
+	button.addEventListener('click', async (e) => {
+		await RemoveFromArrayInStorage(key, "y1dxtz2");
+		UpdateFieldLabel(button);
+		e.preventDefault();
+	});
+}
