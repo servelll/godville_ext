@@ -16,9 +16,11 @@ if (document.location.href.includes("https://gv.erinome.net/duels/log/")) {
 		let b = await UrlExistsAsync(link);
 		a.textContent = b ? "[+]" : "[-]";
 		AppendToArrayInStorage(b ? "MyGV_LoadedLogs" : "MyGV_NotLoadedLogs", id);
-		if (b) RemoveFromArrayInStorage("MyGV_NotLoadedLogs", id);
-		a.onclick = null;
-		a.title = "";
+		if (b) {
+			RemoveFromArrayInStorage("MyGV_NotLoadedLogs", id);
+			a.onclick = null;
+			a.title = "";
+		}
 		e.preventDefault();
 	}
 	chrome.storage.local.get("MyGV_LoadedLogs").then(obj => {
@@ -33,14 +35,14 @@ if (document.location.href.includes("https://gv.erinome.net/duels/log/")) {
 			if (!obj2) return;
 			if (obj2["MyGV_NotLoadedLogs"].includes(id)) {
 				a.textContent = "[-]";
-				a.title = "";
-				a.onclick = null;
 			}
 		});
 	});
-
-	document.querySelector(".lastduelpl_f").lastChild.append(" ");
-	document.querySelector(".lastduelpl_f").lastChild.appendChild(a);
+	let q = document.querySelector(".lastduelpl_f");
+	if (q && q.lastChild) {
+		q.lastChild.append(" ");
+		q.lastChild.appendChild(a);
+	}
 }
 
 class PolygonLog {
@@ -159,7 +161,7 @@ class PolygonLog {
 function UpdateSails(e) {
 	step = document.getElementById("slider").value;
 
-	if (e === undefined) return;
+	if (!e) return;
 	for (let mutation of e) {
 		if (mutation.type === 'childList') {
 			console.log(mutation, 'A child node has been added or removed.');

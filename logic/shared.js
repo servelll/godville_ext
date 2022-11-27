@@ -100,7 +100,7 @@ class Polygon {
         pushes_percents_table[index][submove_owner_letter] = {};
 
         let prevsub = GetPrevSubIndexs(index, subindex);
-        if (submove_owner_letter == undefined) {
+        if (!submove_owner_letter) {
             submove_owner_letter = alive_boss_letters[subindex];
 
 

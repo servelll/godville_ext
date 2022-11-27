@@ -7,7 +7,7 @@ function AddAbstactPopupObserver(name, title_text, inside_observer_callback) {
 		let wups = document.querySelectorAll(".wup");
 		for (const wup of wups) {
 			let wup_title = wup.querySelector(".wup-title");
-			if (wup_title != null && wup_title.textContent.includes(title_text)) {
+			if (wup_title && wup_title.textContent.includes(title_text)) {
 				console.log(name + "PopupObserver callback inside");
 				let wup_title = wup.querySelector(".wup-title");
 				wup_title.style.display = "flex";
@@ -45,7 +45,7 @@ function AddLogsHistoryPopupObserver() {
 function AddLaboratoryPopupObserver() {
 	AddAbstactPopupObserver("Laboratory", "Лаборатория", function (wup, wup_title) {
 		let a = wup_title.querySelector("#MyGV_CalcLink");
-		if (a == null) {
+		if (!a) {
 			a = document.createElement("a");
 			a.textContent = "Ссылка на калькулятор";
 			a.id = "MyGV_CalcLink";
@@ -87,7 +87,7 @@ function AddGodVoicesPopupObserver() {
 		function UpdateObjText(par_entity) {
 			let obj = document.getElementById(par_entity.id);
 			//console.log("UpdateObjText", par_entity, obj);
-			if (obj != null) {
+			if (obj) {
 				obj.className = (Object.keys(par_entity.dict).length == 0) ? "" : "div_link_nu";
 				obj.textContent = par_entity.pre + Object.keys(par_entity.dict).length + par_entity.post;
 			}
@@ -111,11 +111,11 @@ function AddGodVoicesPopupObserver() {
 		reFillDictionariesAndUpdateNumbers();
 
 		let godvoices_panel = document.getElementById("gv_popover_c");
-		if (godvoices_panel != null) {
+		if (godvoices_panel) {
 			const a = godvoices_panel.parentNode.parentNode;
 			function Create_DeleteDiv(_entity) {
 				let obj = document.getElementById(_entity.id);
-				if (obj == null) {
+				if (!obj) {
 					obj = document.createElement("div");
 					obj.id = _entity.id;
 					obj.title = _entity.title;
@@ -138,17 +138,17 @@ function AddGodVoicesPopupObserver() {
 			}
 
 			let el = document.getElementById("MyGV_craft_del");
-			if (title_chronique == null && diary != null) {
+			if (!title_chronique && diary) {
 				Create_DeleteDiv(global_par_table[0]);
 			} else {
-				if (el != null) el.style.display = "none";
+				if (el) el.style.display = "none";
 			}
 
 			let el1 = document.getElementById("MyGV_directions_del");
-			if (title_chronique != null && title_chronique.textContent.includes("подземелья")) {
+			if (title_chronique && title_chronique.textContent.includes("подземелья")) {
 				Create_DeleteDiv(global_par_table[1]);
 			} else {
-				if (el1 != null) el1.style.display = "none";
+				if (el1) el1.style.display = "none";
 			}
 
 			Create_DeleteDiv(global_par_table[2]);
@@ -172,7 +172,7 @@ function AddGodVoicesPopupObserver() {
 function AddChroniqueStepObserver() {
 	let title_chronique = document.querySelector("#m_fight_log > div.block_h > h2");
 	let div = document.getElementById("MyGV_ToNextHint");
-	if (div == null) {
+	if (!div) {
 		div = document.createElement("div");
 		div.id = "MyGV_ToNextHint";
 		div.style.display = "inline";
@@ -219,7 +219,7 @@ function AddChroniqueStepObserver() {
 function AddPolygonStepObserver() {
 	let polygon_chronuque = document.querySelector("#a_central_block div.block_h h2");
 	let div = document.getElementById("MyGV_PolygonTimeBeforeEndHint");
-	if (div == null) {
+	if (!div) {
 		div = document.createElement("div");
 		div.id = "MyGV_PolygonTimeBeforeEndHint";
 		div.title = "осталось секунд до конца полигона";
@@ -275,7 +275,7 @@ function AddOrUpdateAquariumLinks() {
 	let map = m.childNodes[1];
 
 	let exitObj = document.querySelector("[title*='Выход из подземелья']") || document.querySelector("[title*='Команда героев']");
-	if (exitObj == null || document.querySelector("[title*='Тайная комната'") != null || m.childNodes[0].textContent.includes("2Э")) {
+	if (!exitObj || document.querySelector("[title*='Тайная комната'") || m.childNodes[0].textContent.includes("2Э")) {
 		console.log("AddOrUpdateAquariumLinks return");
 		return;
 	}
@@ -292,7 +292,7 @@ function AddOrUpdateAquariumLinks() {
 	}
 
 	let a = document.getElementById("MyGV_AquaLink");
-	if (a == null) {
+	if (!a) {
 		a = document.createElement("a");
 		a.id = "MyGV_AquaLink";
 		a.textContent = "Карта аквариума";
@@ -335,7 +335,7 @@ function AddOrUpdateAquariumLinks() {
 		let type = 0;
 		if (e.className.includes("dmw")) return null;
 		return `${coords[1] - exitCoord[1] + 17},${coords[0] - exitCoord[0] + 17}-` + type;
-	}).filter(a => a != null);
+	}).filter(a => a);
 
 	let link = "!https://digdog.web.app/?points=" + points_mas.join(";");
 	a.href = link;
@@ -440,7 +440,7 @@ function AddHolemSearch() {
 //TODO ????
 function DecideToAddAuraStringObserver() {
 	let second_target = Array.from(document.querySelectorAll("#stats > div.block_content > .line:not([id])")).find(a => a.firstElementChild.textContent == "Аура");
-	if (second_target != undefined) AddAuraSecondsObserver(second_target.lastElementChild);
+	if (second_target) AddAuraSecondsObserver(second_target.lastElementChild);
 	else {
 		let target = document.querySelector("#stats > div.block_content");
 		let config = {
@@ -484,7 +484,7 @@ function AddAuraSecondsObserver(target) {
 //TODO параметр для разных режимов
 function AddMyGVCountsBlock() {
 	let div = document.getElementById("MyGV_Field_Counts");
-	if (div == null) {
+	if (!div) {
 		div = document.createElement("div");
 		div.id = "MyGV_Field_Counts";
 		div.className = "block";
@@ -504,7 +504,7 @@ function AddMyGVCountsBlock() {
 	}
 
 	let div_duel = document.getElementById("MyGV_Duel_Counts");
-	if (div_duel == null) {
+	if (!div_duel) {
 		div_duel = div.cloneNode(true);
 		div_duel.id = "MyGV_Duel_Counts";
 		document.getElementById("right_block")?.appendChild(div_duel);
@@ -573,7 +573,7 @@ function AddFieldTaskObserver() {
 		let taskWithPerc = task.style.getPropertyValue('width') ?? "0%";
 		let taskValue = Number(taskWithPerc.slice(0, -1));
 		let obj = document.querySelector("#news_pb .p_bar.n_pbar .p_val");
-		if (obj != null) {
+		if (obj) {
 			if (taskWithPerc == "0%") {
 				obj.style.setProperty('--Width', "1%");
 				obj.style.setProperty('--Left', "0%");
@@ -604,14 +604,14 @@ function AddFieldHeaderObserver() {
 	let callback = function (mutationsList, observer) {
 		let val = target.textContent.includes("из города") ? "hidden" : "visible";
 		/*
-		if (mutationsList != null) {
+		if (mutationsList) {
 			for (let mutation of mutationsList) {
 				console.log(mutation);
 			}
 		}
 		*/
 		let obj = document.querySelector("#news_pb .p_bar.n_pbar .p_val");
-		if (obj != null) {
+		if (obj) {
 			obj.style.setProperty('--Visibility', val);
 		}
 		console.log("FieldHeaderObserver callback", target, val, document.querySelector("#news > div.block_h > h2"));
@@ -752,7 +752,7 @@ waitForContents(() => {
 	}
 
 	let title_chronique = document.querySelector("#m_fight_log div.block_h > h2");
-	if (title_chronique != null && !was_runned_on.some(i => i.includes("chronique"))) {
+	if (title_chronique && !was_runned_on.some(i => i.includes("chronique"))) {
 		AddChroniqueStepObserver();
 		if (title_chronique.textContent.includes("боя")) {
 			AddHolemSearch();
@@ -760,12 +760,12 @@ waitForContents(() => {
 		temp_will_run_state.push("chronique");
 	}
 	let polygon_title = document.querySelector("#a_central_block div.block_h > h2");
-	if (polygon_title != null && polygon_title.textContent.includes("Полигон") && !was_runned_on.some(i => i.includes("polygon"))) {
+	if (polygon_title && polygon_title.textContent.includes("Полигон") && !was_runned_on.some(i => i.includes("polygon"))) {
 		AddPolygonStepObserver();
 		temp_will_run_state.push("polygon");
 	}
 	let diary = document.querySelector("#diary div.block_h > h2");
-	if (diary != null && !was_runned_on.some(i => i.includes("diary"))) {
+	if (diary && !was_runned_on.some(i => i.includes("diary"))) {
 		DecideToAddAuraStringObserver();
 		AddInventoryListener();
 		//AddFieldNewsListener();
@@ -786,7 +786,7 @@ let godpower = document.querySelector("#cntrl > div.pbar.line > div.gp_val.l_val
 let polygon = document.querySelector("#r_map > div.block_h > h2");
 
 let diary = document.querySelector("#diary > div.block_h > h2");
-if (diary != null) {
+if (diary) {
 	//определение торговли
 
 	//газета - проклик "проверить" -> "заполнить" или "ой все" на бинго

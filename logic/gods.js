@@ -16,7 +16,7 @@ if (document.URL.slice(-5) != ".json") {
     //skills
     let v3 = 0;
     let where2 = document.querySelector("#column_2 > .b_list");
-    if (where2 != null) {
+    if (where2) {
         let sk_mas = Array.from(where2.querySelectorAll("li span"));
         let sum2 = sk_mas.reduce((acc, i) => acc + (i.textContent != "" ? parseInt(i.textContent) : 0), 0);
         v3 = (10 * sum2);
@@ -48,7 +48,7 @@ if (document.URL.slice(-5) != ".json") {
     let first_mas = Array.from(document.querySelectorAll("#characteristics > tbody > tr"));
     //age time
     let age_obj = first_mas.filter(td => td.firstElementChild.textContent.includes("Возраст"));
-    if (age_obj != null) { //никогда, но почему нет
+    if (age_obj) {
         let age_clear_text = age_obj[0].lastElementChild.firstChild.textContent;
         let age_mas = age_clear_text.split(" ");
         let age_hours = age_mas[age_mas.findIndex(i => i.includes("час")) - 1];
@@ -58,18 +58,18 @@ if (document.URL.slice(-5) != ".json") {
 
         let d2 = moment();
         let date1_structure = {};
-        if (age_hours != undefined) date1_structure.hours = age_hours;
-        if (age_days != undefined) date1_structure.days = age_days;
-        if (age_month != undefined) date1_structure.month = age_month;
-        if (age_years != undefined) date1_structure.years = age_years;
+        if (age_hours) date1_structure.hours = age_hours;
+        if (age_days) date1_structure.days = age_days;
+        if (age_month) date1_structure.month = age_month;
+        if (age_years) date1_structure.years = age_years;
         d2.subtract(date1_structure);
 
         let d1 = d2.clone();
         let birth_approx;
-        if (age_years != undefined) {
+        if (age_years) {
             d1.subtract(1, 'month');
             birth_approx = "месяц";
-        } else if (age_month != undefined || age_days != undefined) {
+        } else if (age_month || age_days) {
             d1.subtract(1, 'day');
             birth_approx = "день";
         } else {
@@ -82,7 +82,7 @@ if (document.URL.slice(-5) != ".json") {
         //pure days - date of birth
         let total_days_obj = document.querySelector("#characteristics div.d_date");
         let d3, d4;
-        if (total_days_obj != null) {
+        if (total_days_obj) {
             let total_days = Number(total_days_obj.textContent.match(/\d+/)[0]);
             d4 = moment().subtract({ days: total_days });
             d3 = d4.clone();
@@ -91,8 +91,8 @@ if (document.URL.slice(-5) != ".json") {
             total_days_obj.title += `\nДнем рождения считается ${d4.format("DD.MM.YYYY")}`;
             birth_approx = "день";
         }
-        let birth_d1 = (total_days_obj != null) ? d3 : d1;
-        let birth_d2 = (total_days_obj != null) ? d4 : d2;
+        let birth_d1 = (total_days_obj) ? d3 : d1;
+        let birth_d2 = (total_days_obj) ? d4 : d2;
 
         function getBetterRussianHumanizedDurationText(dur) {
             let m = [];
@@ -126,14 +126,14 @@ if (document.URL.slice(-5) != ".json") {
             p.className = "duration_div";
 
             let date_text = (span_dt.length == 1) ? span_dt[0].textContent.match(/\d+\.\d+\.\d+ \d+\:\d+/) : null;
-            let d_text = (span_dt.length == 0 || date_text == null) ? "уже" : "за";
-            let d = (span_dt.length == 0 || date_text == null) ? moment() : moment(date_text[0].trim(), 'DD.MM.YYYY HH:mm');
+            let d_text = (span_dt.length == 0 || !date_text) ? "уже" : "за";
+            let d = (span_dt.length == 0 || !date_text) ? moment() : moment(date_text[0].trim(), 'DD.MM.YYYY HH:mm');
 
-            let current_dates = (start_dates == null) ? { d1: birth_d1, d2: birth_d2, approx: birth_approx, hint: "регистрации" } : start_dates;
+            let current_dates = (!start_dates) ? { d1: birth_d1, d2: birth_d2, approx: birth_approx, hint: "регистрации" } : start_dates;
 
-            if (current_dates.d1 == null) return { d1: null, hint: hint }; //escape future calculations
+            if (!current_dates.d1) return { d1: null, hint: hint }; //escape future calculations
             if (current_dates.d1 > first_date) {
-                if (start_dates == null) {
+                if (!start_dates) {
                     p.title = "Погрешность 1 " + birth_approx + " от возраста";
                 }
             }
@@ -142,11 +142,11 @@ if (document.URL.slice(-5) != ".json") {
             if (moment.max(first_date, current_dates.d1) < d) {
                 let bool_equal_durations = false;
                 let duration_min;
-                if (current_dates.approx != undefined) {
+                if (current_dates.approx) {
                     duration_min = moment.duration(d.diff(moment.max(first_date, current_dates.d2)));
                     bool_equal_durations = (duration_max.asMilliseconds() == duration_min.asMilliseconds());
                 }
-                if (current_dates.approx == undefined || bool_equal_durations) {
+                if (!current_dates.approx || bool_equal_durations) {
                     p.textContent = `${d_text} ${getBetterRussianHumanizedDurationText(duration_max)}`;
                 } else {
                     p.textContent = `${d_text} [${getBetterRussianHumanizedDurationText(duration_min)} - ${getBetterRussianHumanizedDurationText(duration_max)})`;

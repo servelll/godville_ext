@@ -73,7 +73,7 @@ function LoadIfExist(e) {
 					let i_block = document.getElementById(i);
 					let value = object.options[i];
 					console.log(i, i_block);
-					if (i_block == undefined) continue;
+					if (!i_block) continue;
 					if (i_block.tagName == "INPUT") {
 						if (i_block.type == "checkBox") {
 							i_block.checked = value;
@@ -94,7 +94,7 @@ function LoadIfExist(e) {
 			}
 		}
 	});
-	if (e != undefined && e.type == "Event") e.preventDefault();
+	if (e && e.type == "Event") e.preventDefault();
 }
 
 LoadIfExist();

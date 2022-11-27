@@ -46,7 +46,7 @@ async function AddCrosswordThings() {
 				} else if (z.length == 1 || compareArr(Array.from(z).map(v => v[_ind]))) {
 					if (o.value == "") x = z[0][_ind];
 				}
-				if (x !== undefined) {
+				if (x) {
 					//console.log(`${x.toUpperCase()} ${o.getAttribute("id")}`);
 					o.value = x.toUpperCase();
 				}
@@ -116,7 +116,7 @@ async function AddCrosswordThings() {
 					var symb = (node.getAttribute("class") == "sym") ? node.value : node.innerHTML;
 					if (symb == " ") return " ";
 					if (symb == "Ё" || symb == "ё") return '[ЁЕ]';
-					return (symb == "" || symb === undefined) ? "." : `${symb.toLowerCase()}`;
+					return (!symb) ? "." : `${symb.toLowerCase()}`;
 				});
 
 				let source;
@@ -136,10 +136,10 @@ async function AddCrosswordThings() {
 					if (accuracy_level < 2 && i.value.includes('Жирный')) i.total_regex_mask += "(?=\|\(.*жирный.*\))";
 				}
 
-				if (source != undefined) {
+				if (source) {
 					//Корован как Сильный монстр????
 					i.match = source.match(new RegExp(i.total_regex_mask, "gim"));
-					if (i.match != null) {
+					if (i.match) {
 						i.match = Array.from(new Set(i.match));
 					}
 				} else throw new Error("unknown category!");
@@ -159,7 +159,7 @@ async function AddCrosswordThings() {
 		for (let j of final_mas) {
 			for (let i of j.array) {
 				//общее множеств и одиночки
-				if (i.match != null) {
+				if (i.match) {
 					FillWord(i.objs, i.match);
 					if (i.match.length == 1) i.status = "filled";
 				}
@@ -169,7 +169,7 @@ async function AddCrosswordThings() {
 		//на 2 - позволяем пользователю выбрать дубли оставшегося
 		if (accuracy_level >= 3) {
 			for (let j of final_mas) {
-				for (let i of j.array.filter(a => a.match != null && a.match.length > 1)) {
+				for (let i of j.array.filter(a => a.match && a.match.length > 1)) {
 					let b = document.createElement("button");
 					b.style = "margin: 10px";
 					b.textContent = `${i.index} ${j.dir}: ${i.match[0]}`;
@@ -241,7 +241,7 @@ AddUnknownForecastLinks();
 
 function AddWantedMonsterLinks() {
 	let p_s = document.querySelectorAll("#content div.game div p:not([class]):not([id])");
-	let wanted_ps = Array.from(p_s).filter(i => i.parentNode.previousSibling.previousSibling != null &&
+	let wanted_ps = Array.from(p_s).filter(i => i.parentNode.previousSibling.previousSibling &&
 		i.parentNode.parentNode.firstElementChild.textContent == "Разыскиваются");
 	console.log("AddWantedMonsterLinks", wanted_ps);
 	for (let p of wanted_ps) {
@@ -297,7 +297,7 @@ AddWantedMonsterLinks();
 function UpdateBingo() {
 	const l_clicks = document.getElementById("l_clicks");
 	let p2 = document.getElementById("bingo_possible_price_next");
-	if (p2 == null) {
+	if (!p2) {
 		p2 = document.createElement("p");
 		p2.id = "bingo_possible_price_next";
 		//p2.style.display = "";
@@ -360,9 +360,9 @@ function AddCondensatorThings() {
 	let max_perc = document.createElement("a");
 
 	function cond_last_update(v) {
-		last_max = (v == null) ? 0 : v;
+		last_max = (v) ? v : 0;
 		last_datetime = new Date();
-		max_perc.textContent = (v == null) ? "Очистили точку отсчета " : `Максимум ${v} % в `;
+		max_perc.textContent = (v) ? `Максимум ${v} % в ` : "Очистили точку отсчета ";
 		function addZero(i) {
 			if (i < 10) { i = "0" + i }
 			return i;
@@ -392,7 +392,7 @@ function AddCondensatorThings() {
 		}
 
 		//https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event#browser_compatibility
-		if (checkbox != undefined) {
+		if (checkbox) {
 			window.addEventListener("beforeunload", function (e) {
 				if (checkbox?.checked) {
 					let confirmationMessage = `Поставлена задача по забиранию процента с праноконденсатора, 
@@ -426,7 +426,7 @@ function AddCondensatorThings() {
 	};
 	let cond_callback = function (mutationsList, observer) {
 		/*
-		if (div != undefined && div != null && document.getElementById("gp_bat").style.left == "0px"
+		if (div && document.getElementById("gp_bat").style.left == "0px"
 			&& document.getElementById("gp_cap_use").getAttribute("disabled") == "disabled") {
 			console.log(document.getElementById("gp_cap_use"), document.getElementById("gp_bat"));
 			//cond_observer.disconnect();
@@ -447,10 +447,10 @@ function AddCondensatorThings() {
 		//console.log(cond_perc(), `% на момент времени: ...${ new Date().getSeconds() }s ${ new Date().getUTCMilliseconds() } ms`);
 
 		//actions to click
-		if (checkbox != undefined) {
+		if (checkbox) {
 			let chosen_perc = Number(input.value);
 			function Check_conditions() {
-				return (cond_perc() >= chosen_perc - 1 && checkbox.checked && chosen_perc > 0 && document.getElementById("gp_cap_use").getAttribute("style") == null);
+				return (cond_perc() >= chosen_perc - 1 && checkbox.checked && chosen_perc > 0 && !document.getElementById("gp_cap_use").getAttribute("style"));
 			}
 			function DoActions() {
 				document.getElementById("gp_cap_use").click();
