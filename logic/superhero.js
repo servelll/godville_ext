@@ -328,6 +328,7 @@ function AddOrUpdateAquariumLinks() {
 	}, []);
 
 	console.log("chosenPoints", chosenPoints);
+	// ТУТ РАСКОММЕНТИТЬ!!!
 	//TODO переписать!
 	let points_mas = chosenPoints.map(e => {
 		console.log(e);
@@ -722,6 +723,18 @@ function UpdateMiniQuestsDB() {
 	});
 }
 
+function CheckPetsDB() {
+	browser.storage.local.get('pets', function (result) {
+		if (Object.keys(result.pets).length == 0) {
+			fillPetsDBtoStorage();
+			console.log("Filling pets DB to browser local storage");
+		}
+		else {
+			console.log("Pets DB exists");
+		}
+	});
+}
+
 //листенер ожидания реальной прогрузки документа в первый раз 
 //(потому что обычный addeventlisner('load' и аналоги иногда багано выдают неполную страницу)
 //+ эта же конструкция для включения функций в случае переключения дуэльного режима - неполной перезагрузки
@@ -732,7 +745,7 @@ waitForContents(() => {
 		temp_will_run_state.push("base");
 		//console.log("document", document.body.outerHTML);
 		//console.log(document.getElementById('stats'), document.getElementById('m_info'), document.getElementById('b_info'));
-
+		CheckPetsDB();
 		AddMyGVCountsBlock();
 		AddLogsHistoryPopupObserver();
 		AddLaboratoryPopupObserver();
@@ -744,6 +757,14 @@ waitForContents(() => {
 		AddChroniqueStepObserver();
 		if (title_chronique.textContent.includes("боя")) {
 			AddHolemSearch();
+		}
+		if (title_chronique.textContent.includes('подземелья')) {
+			AddPaws("подземный");
+			temp_will_run_state.push("dungeon");
+		}
+		if (document.getElementById("s_map")) {
+			AddPaws("морской");
+			temp_will_run_state.push("sea");
 		}
 		temp_will_run_state.push("chronique");
 	}
@@ -762,7 +783,6 @@ waitForContents(() => {
 		AddFieldTaskObserver();
 		UpdateMiniQuestsDB();
 		AddMiniQuestListeners();
-
 		temp_will_run_state.push("diary");
 	}
 	was_runned_on.push(temp_will_run_state);
@@ -817,7 +837,6 @@ function FindTittleInfo(miniQuests, target) {
 			}
 		}
 	}
-	//console.log(titleInfo);
 	return titleInfo;
 }
 
@@ -897,24 +916,69 @@ function AddMiniQuestListeners() {
 }
 
 // Pet's paws
-function getPageFromLink(link) {
+function getPageFromLink(link, init) {
 	return new Promise((resolve, reject) => {
-		fetch(link, init).then(responce => {
-			if (responce.ok) {
-				console.log(responce.text());
-			}	
-		})
-		console.log('AAAAA');
-		resolve(2);
+		cors_link = "https://tranquil-oasis-11167.herokuapp.com/"
+		fetch(cors_link + link, { headers: { "x-requested-with": "" } })
+			.then(responce => responce.text())
+			.then(data => {
+				const parser = new DOMParser();
+				html = parser.parseFromString(data, "text/html")
+				resolve(html);
+			})
 	})
-
 }
 
 
 function fillPetsDBtoStorage() {
+	let pets = {};
 	getPageFromLink("https://wiki.godville.net/%D0%9F%D0%B8%D1%82%D0%BE%D0%BC%D0%B5%D1%86").then(raw_data => {
-		console.log(raw_data);
-
-	})
-
+		//console.log(raw_data);
+		for (const k of Array.prototype.slice.call(raw_data.querySelectorAll("table.standard.collapsible.collapsed.sortable > tbody > tr"), 3)) {
+			//console.log(k.querySelector("td:nth-child(2)"));
+			//console.log(k.querySelectorAll('*')[0]);
+			pets[k.firstElementChild.textContent] = k.lastElementChild.previousElementSibling?.textContent;
+		}
+		browser.storage.local.set({ pets }).then(() => {
+			SetToStorage("AutoGV_pets_lastDate", new Date().toLocaleString());
+		});
+	});
 }
+
+function GetPet(godName) {
+	return new Promise((resolve, reject) => {
+		let url = `https://godville.net/gods/api/${godName}.json`;
+		//fetch("https://tranquil-oasis-11167.herokuapp.com/" + url)
+		fetch(url)
+			.then(response => {
+				if (response.ok) return response.json();
+			})
+			.then(data => {
+				resolve(data.pet);
+			}).catch(er => reject(er));
+	});
+}
+
+function AddPaws(petSelector) {
+	const paws = document.createElement("span");
+	paws.textContent = "🐾";
+	for (const d of document.querySelectorAll('#alls > div.block_content > div:nth-child(1) > div > div > div.opp_n.opp_ng')) {
+		GetPet(d.firstElementChild.firstChild.textContent.slice(1, -1)).then(res => {
+			browser.storage.local.get("pets", dict => {
+				//console.log(dict.pets[res.pet_class]);
+				if (dict.pets[res.pet_class].includes(petSelector)) {
+					paws_copy = paws.cloneNode(true);
+					paws_copy.title = res.pet_name + " " + res.pet_level ? res.pet_level : "контуженный";
+					d.style.display = "inline-block";
+					d.parentElement.style.textAlign = 'left';
+					d.firstElementChild.textContent += " ";
+					d.appendChild(paws_copy);
+				}
+			});
+		});
+	}
+}
+
+window.addEventListener('load', e => {
+	CheckPetsDB();
+});
