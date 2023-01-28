@@ -523,53 +523,52 @@ function AddCondensatorThings() {
 
 // Coupon things
 function AddCouponThings() {
-	// function for working throw callback with Bingo table elements 
-	function tableElements(callback) {
-		[...document.querySelectorAll("#bgn > tbody > tr > td")].forEach((tableElem) => {
-			callback(tableElem);
-		});
-	}
+	const button = document.querySelector("#coupon_b");
+	const coupon_text = document.querySelector("#cpn_name").innerText.replaceAll('\n', ' ').trim();
 
-	function addAts(tableElem) {
-		if (document.querySelector("#cpn_name").textContent.includes(tableElem.textContent)) {
-			// Конструктор элемента @
-			const at = document.createElement("a");
-			at.appendChild(document.createTextNode("@"));
-			at.className = 'my_At';
-			at.title = document.querySelector("#cpn_name").innerText.replaceAll('\n', ' ');
-			// Pushing at is pushing btn to take coupon
-			at.addEventListener("click", () => {
-				document.querySelector("#coupon_b").click();
-			});
-			const atdiv = document.createElement("div");
-			atdiv.textContent = " (";
-			atdiv.className = 'my_div';
-			atdiv.appendChild(at);
-			at.after(')');
-			tableElem.appendChild(atdiv);
+	if (!button.disabled) {
+		// observer on success button click for remove ats
+		//срабатывает в случае, если кнопка недоступна (в дуэлях и при переключении режимов)
+		const button_callback = function (mutationsList, observer) {
+			console.log("button_callback inside");
+			if (button.disabled) {
+				Array.from(document.getElementsByClassName("my_div")).forEach(el => el.remove());
+			}
 		}
-	}
+		const button_observer = new MutationObserver(button_callback);
+		button_observer.observe(button, { attributes: true });
 
-	function removeAts(tableElem) {
-		while (tableElem.querySelector('div')) {
-			tableElem.removeChild(tableElem.querySelector('div'));
+		// Observe table for adding ats if it was recorded by control btns: "bgn_show", "bgn_use"
+		const coupon_callback = function (mutationsList, observer) {
+			console.log("coupon_callback inside");
+			if (!button.disabled) {
+				Array.from(document.querySelectorAll("#bgn td")).forEach((tableElem) => {
+					if (tableElem.classList.contains("bgnk") && coupon_text.includes(tableElem.textContent)) {
+						// Конструктор элемента @
+						const at = document.createElement("a");
+						at.textContent = "@";
+						at.className = 'my_at';
+						at.title = coupon_text;
+						// Pushing at is pushing btn to take coupon
+						at.addEventListener("click", () => {
+							button.click();
+						});
+						const atdiv = document.createElement("div");
+						atdiv.textContent = " (";
+						atdiv.className = 'my_div';
+						atdiv.appendChild(at);
+						at.after(')');
+						tableElem.appendChild(atdiv);
+					}
+				});
+			}
 		}
+		const coupon_observer = new MutationObserver(coupon_callback);
+		coupon_observer.observe(document.getElementById("bgn_t"), { childList: true });
+
+		// First adding ats
+		coupon_callback();
 	}
-	// First adding ats
-	if (!document.querySelector("#coupon_b").disabled) {
-		tableElements(addAts);
-	}
-	// Listener on coupon btn for remove ats
-	document.querySelector("#coupon_b").addEventListener('click', () => { tableElements(removeAts) });
-	// Observe table for adding ats if it was recorded by control btns: "bgn_show", "bgn_use"
-	let coupon_callback = function (mutationsList, observer) {
-		console.log("Srabotal observer");
-		if (!document.querySelector("#coupon_b").disabled) {
-			tableElements(addAts);
-		}
-	}
-	let coupon_observer = new MutationObserver(coupon_callback);
-	coupon_observer.observe(document.getElementById("bgn_t"), { childList: true });
 	console.log("AddCouponListener done");
 }
 

@@ -1,11 +1,9 @@
-.my_At {
+.my_at {
     color: #199BDC;
-    text-decoration: none;
 }
 
-.my_At:hover {
+.my_at:hover {
     cursor: pointer;
-    text-decoration: none;
     color: #DA251D;
 }
 
