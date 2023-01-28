@@ -11,6 +11,13 @@ if (new URL(document.URL).protocol == 'file:') {
 }
 */
 
+function PERFORMANCE_PRINT(callback) {
+    let time = performance.now();
+    callback();
+    time = performance.now() - time;
+    console.log(`Время выполнения ${time.toFixed(1)}ms`);
+}
+
 function getLocalSelectorOfNode(node) {
     let str = node.nodeName;
     if (node.id) {
@@ -147,34 +154,73 @@ async function AppendToArrayInStorage(key, value) {
     await SetToStorage(key, obj[key]);
 }
 
-async function RemoveFromArrayInStorage(key, value) {
-    let obj = await chrome.storage.local.get(key);
+async function RemoveFromArrayInStorage(key, value, multiple_values = false) {
+    const obj = await chrome.storage.local.get(key);
     if (obj && obj[key]) {
         console.log("Removing all key-value pairs in dict, or trying, by key:", key, "; value:", value);
-        obj[key] = obj[key].filter(i => i != value);
+        if (multiple_values) {
+            obj[key] = obj[key].filter(i => !value.includes(i));
+        } else {
+            obj[key] = obj[key].filter(i => i != value);
+        }
         await SetToStorage(key, obj[key]);
     }
 }
 
+function AddAbstractChromeStorageListener(text, callback) {
+    const bool_already_added = document.addedListenersList?.includes(text);
+    console.log("AddAbstractChromeStorageListener inside", text, bool_already_added, document.addedListenersList);
+
+    if (!bool_already_added) {
+        console.log("Adding first time AbstractChromeStorageListener", text);
+        if (!document.addedListenersList) document.addedListenersList = [];
+        document.addedListenersList.push(text);
+        chrome.storage.onChanged.addListener((changes, area) => {
+            console.log(text + ": change in storage area: " + area, changes);
+            for (const ch_key of Object.keys(changes)) {
+                if (ch_key == "MyGV_NotLoadedLogs" || ch_key == "MyGV_LoadedLogs") {
+                    const new_arr = Array.from(changes[ch_key].newValue ?? []);
+                    const old_arr = Array.from(changes[ch_key].oldValue ?? []);
+                    const add_arr = new_arr.filter(id => !old_arr.includes(id));
+                    if (add_arr && add_arr.length > 0) {
+                        callback(add_arr, new_arr, ch_key);
+                    }
+                }
+            }
+        });
+    }
+}
+
+//https://tranquil-oasis-11167.herokuapp.com/"
 //only https://corsproxy.io/
 //working for https://gv.erinome.net/duels/log/x5rlfs, not forking for files
-function UrlExistsAsync(url) {
-    return new Promise((resolve, reject) => {
-        let fetch_url = (document.location.origin != new URL(url).origin) ? "https://corsproxy.io/?" + url : url;
-        fetch(fetch_url, { method: "HEAD" })
-            .then(response => {
-                console.log(response);
-                if (response.status == 500 || response.status == 404 || response.redirected) {
-                    resolve(false);
-                    return;
-                }
-                if (response.ok && response.status == 200) {
-                    resolve(true);
-                    return;
-                }
-                throw new Error('UrlExistsAsync response idk error'); //for future debug
-            });
-    });
+const cors_head_urls = [
+    "https://tranquil-oasis-11167.herokuapp.com/",
+    "https://corsproxy.io/?", //* request modes, but only without video];
+];
+async function UrlExistsAsync(url) {
+    let another_loop = true, cors_i = cors_head_urls.values();
+    while (another_loop) {
+        let c = cors_i.next();
+        console.log("while", c.value);
+        if (c.done) break;
+        another_loop = false;
+        try {
+            const fetch_url = (document.location.origin != new URL(url).origin) ? c.value + url : url;
+            const response = await fetch(fetch_url, { method: "HEAD" });
+            console.log(response);
+            if (response.status == 500 || response.status == 404 || response.redirected) {
+                return false;
+            }
+            if (response.ok && response.status == 200) {
+                return true;
+            }
+            throw new Error('UrlExistsAsync response idk error'); //for future debug
+        } catch (e) {
+            another_loop = true;
+            console.log("UrlExistsAsyncError", e);
+        }
+    }
 }
 function getPageFromUrl(url, init) {
     return new Promise((resolve, reject) => {
@@ -247,61 +293,57 @@ function CorsGetPageFromUrl(url) {
         }
     });
 }
-//supehero.js && last_fight.js
-async function AddErinomeLogsCheckingActions(wup, after_node) {
-
-    function MarkRow(row_obj, url_exist, link) {
-        //console.log("MarkRow", row_obj, url_exist);
-        let new_text = `[${url_exist ? '+' : '-'}]`;
-        let a = row_obj.querySelector("a");
-        if (!a) {
-            a = document.createElement("a");
-            a.setAttribute("href", link);
-            a.style.textDecoration = "none";
-            a.onclick = (e) => {
-                window.open(link, '_blank');
-                e.preventDefault();
-            }
-            a.textContent = new_text;
-            row_obj.prepend(a, " ");
-        } else if (new_text != a.textContent) {
-            a.textContent = "[+/-]";
-        } else {
-            a.textContent = new_text;
-        }
-        return a;
-    }
-
+//superhero.js && last_fight.js
+async function AddErinomeLogsCheckingActions(wup, input_node) {
     console.log("AddErinomeLogsCheckingActions start");
     const dom_arr = () => wup ?
         Array.from(wup.querySelectorAll(".wup-content > div > div > .wl_line > .wl_ftype > a") ?? []) : //popup
-        Array.from(after_node.parentNode.querySelectorAll("tr > td:nth-child(2) > a") ?? []);  //last_fight
+        Array.from(input_node.parentNode.querySelectorAll("tr > td:nth-child(2) > a") ?? []);  //last_fight
     let dom_saved, dom_unsaved, saved_array, unsaved_array;
 
-    let LogsCheck_container = document.createElement("div");
-    LogsCheck_container.className = "wl_line";
-    LogsCheck_container.style.display = "flex";
-    LogsCheck_container.style.minWidth = "280px";
-    LogsCheck_container.style.justifyContent = "center";
-    LogsCheck_container.style.gap = "10px";
-    LogsCheck_container.style.flexWrap = "wrap";
+    //console.log(wup?.querySelector("#lf_popover_c").innerHTML);
+    if (document.getElementById("my_logs_check_container") || input_node?.was_runned) {
+        console.log("AddErinomeLogsCheckingActions return", input_node?.was_runned, input_node);
+        return;
+    }
+    if (input_node) input_node.was_runned = true;
 
-    LogsCheck_container.append("По строкам: ")
+    const LogsCheck_container = document.createElement("div");
+    LogsCheck_container.id = "my_logs_check_container";
+    LogsCheck_container.className = "wl_line my_wl_line";
 
-    let z_plus = document.createElement("z");
+    const f_text = document.createElement("z");
+    f_text.className = "row_header";
+    f_text.textContent = "По строкам: ";
+    LogsCheck_container.appendChild(f_text);
+
+    const f_mytitle = document.createElement("span");
+    f_mytitle.className = "tooltip";
+    f_text.appendChild(f_mytitle);
+
+    const z_plus = document.createElement("z");
     z_plus.title = "Загруженных логов";
     LogsCheck_container.appendChild(z_plus);
 
-    let z_minus = document.createElement("z");
-    z_minus.title = "Не загруженных логов";
+    const z_minus = document.createElement("z");
+    z_minus.className = "pointer_link";
+    z_minus.title = "Не загруженных логов\n~Нажмите, чтобы первые 1 [-] сверху на странице и в хранилище";
+    z_minus.onclick = async () => {
+        z1.started = z2.started = false;
+        const a_to_del = dom_arr().filter(x => x.parentNode.parentNode.textContent.includes("[-]")).slice(0, 1);
+        const id_to_del = a_to_del.map(x => x.href.replace("https://godville.net/duels/log/", ""));
+        //console.log("a_to_del", a_to_del, "id_to_del", id_to_del);
+        unsaved_array = await RemoveFromArrayInStorage('MyGV_NotLoadedLogs', id_to_del, true);
+        dom_unsaved = (dom_unsaved ?? []).filter(s => !id_to_del.includes(s));
+        await DrawUI(id_to_del);
+    }
     LogsCheck_container.appendChild(z_minus);
 
     const z_unknown = document.createElement("z");
-    z_unknown.style.color = "#199BDC";
-    z_unknown.style.cursor = "pointer";
-    z_unknown.title = "Не проверенных логов\nНажмите, чтобы очистить от существующих в 'MyGV_LoadedLogs' элементов массива 'MyGV_NotLoadedLogs',\nот дублей 'MyGV_NotLoadedLogs'/'MyGV_LoadedLogs'";
+    z_unknown.className = "pointer_link";
+    z_unknown.title = "Не проверенных логов\n~Нажмите, чтобы очистить от существующих в 'MyGV_LoadedLogs' элементов массива 'MyGV_NotLoadedLogs',\nот дублей 'MyGV_NotLoadedLogs'/'MyGV_LoadedLogs'";
     z_unknown.onclick = async () => {
-        z1.started = false;
+        z1.started = z2.started = false;
         saved_array = await MakingUniqueArrayInStorage('MyGV_LoadedLogs');
         unsaved_array = await MakingUniqueArrayInStorage('MyGV_NotLoadedLogs', saved_array);
         UpdateText();
@@ -317,25 +359,48 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
     function UpdateText() {
         z_plus.textContent = dom_saved.length + "[+]";
         z_minus.textContent = dom_unsaved.length + "[-]";
-        const dom_arr_buffer = dom_arr();
-        z_total.textContent = dom_arr_buffer.length;
-        z_unknown.textContent = dom_arr_buffer.length - dom_saved.length - dom_unsaved.length + "[?]";
+        const dom_arr_temp = dom_arr();
+        z_total.textContent = dom_arr_temp.length;
+        z_unknown.textContent = dom_arr_temp.length - dom_saved.length - dom_unsaved.length + "[?]";
+
+        const types_count = {};
+        dom_arr_temp.forEach(x => {
+            const key = x.textContent;
+            if (!(types_count[key])) types_count[key] = { saved: 0, unsaved: 0, unknown: 0, total: 0 };
+            types_count[key].total++;
+            if (x.parentNode.parentNode.textContent.includes("[+]")) types_count[key].saved++;
+            else if (x.parentNode.parentNode.textContent.includes("[-]")) types_count[key].unsaved++;
+            else types_count[key].unknown++;
+        });
+        console.log(types_count);
+
+        const thead = '<thead><th>Тип</th><th>+</th><th>-</th><th>?</th><th>TOTAL</th></thead>';
+        let tbody = "";
+        Object.entries(types_count).forEach(entry => {
+            const [key, value] = entry;
+            tbody += `<tr><td>${key}</td><td>${value.saved}</td><td>${value.unsaved}</td><td>${value.unknown}</td><td>${value.total}</td></tr>`;
+        });
+        f_mytitle.innerHTML = `<table>${thead}${tbody}</table>`;
     }
 
     async function DrawUI(diff_id_arr, key) {
-        var time = performance.now();
-        if (diff_id_arr && key) {
-            for (d_id of diff_id_arr) {
-                let filtered = dom_arr().find(a => a.href.includes(d_id));
-                if (filtered) {
-                    let date_td = filtered.parentNode.parentNode.firstElementChild;
-                    let bool = key == 'MyGV_LoadedLogs';
-                    let a = MarkRow(date_td, bool, "https://gv.erinome.net/duels/log/" + d_id);
+        let time = performance.now();
+        if (diff_id_arr) {
+            const filtered_arr = dom_arr().filter(a => diff_id_arr.includes(a.href.replace("https://godville.net/duels/log/", "")));
+            filtered_arr.forEach(filtered => {
+                const d_id = filtered.href.replace("https://godville.net/duels/log/", "");
+                const date_td = filtered.parentNode.parentNode.firstElementChild;
+                const bool = (key == 'MyGV_LoadedLogs') ? true : (key == 'MyGV_NotLoadedLogs') ? false : undefined;
+                if (bool != undefined) {
+                    const a = MarkRow(date_td, bool, "https://gv.erinome.net/duels/log/" + d_id);
                     a.style.backgroundColor = "Aqua";
                     a.title = "Появились новые данные";
                     if (bool) dom_saved.push(d_id); else dom_unsaved.push(d_id);
+                } else {
+                    const a = date_td.querySelector("a");
+                    if (a) a.remove();
                 }
-            }
+            });
         } else {
             async function ActionsWithStoragedAbstract(propertyText) {
                 //this taking some time ~300ms
@@ -350,8 +415,7 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
             //Draw ALL [+]/[-]
             dom_saved = [], dom_unsaved = [];
             for (const x of dom_arr()) {
-                let gv_shortpath = x.href.replace("https://godville.net", "");
-                let x_id = gv_shortpath.replace("/duels/log/", "");
+                const x_id = x.href.replace("https://godville.net/duels/log/", "");
                 const bool = saved_array.includes(x_id);
                 if (bool || unsaved_array.includes(x_id)) {
                     const date_td = x.parentNode.parentNode.firstElementChild;
@@ -368,49 +432,60 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
 
     async function CheckLogsActions(z, UIArr) {
         z.processing = !z.processing;
-        z.setTitle();
+        z.setTitleAndText();
         if (!z.processing) {
             return;
         } else {
-            z.textContent = "[||]";
             //a.textContent = `[${dom_arr.length}]`;
             for (const x of UIArr) {
+                //stop actions
                 if (!z.processing) {
+                    z.setTitleAndText();
+
+                    //clear yellow highlight
+                    for (const row of dom_arr()) {
+                        row.style.backgroundColor = '';
+                        //if (tr.getAttribute("style") == "") tr.removeAttribute("style");
+                    }
                     return;
                 }
-                let tr = x.parentNode.parentNode;
+
+                //actual checking
+                const tr = x.parentNode.parentNode;
                 tr.style.backgroundColor = 'yellow';
-                let date_obj = tr.firstElementChild;
-                let gv_shortpath = x.href.replace("https://godville.net", "");
-                let id = gv_shortpath.replace("/duels/log/", "");
-                let link = "https://gv.erinome.net" + gv_shortpath;
+                const id = x.href.replace("https://godville.net/duels/log/", "");
+                const link = "https://gv.erinome.net/duels/log/" + id;
                 const b = await UrlExistsAsync(link);
                 AppendToArrayInStorage(b ? "MyGV_LoadedLogs" : "MyGV_NotLoadedLogs", id);
                 if (b) {
                     RemoveFromArrayInStorage("MyGV_NotLoadedLogs", id);
-                    dom_saved = dom_saved.filter(i => i !== id);
+                    dom_saved = (dom_saved ?? []).filter(i => i !== id);
                 } else {
-                    unsaved_array = unsaved_array.filter(i => i !== id);
+                    unsaved_array = (unsaved_array ?? []).filter(i => i !== id);
                 }
+                const date_obj = tr.firstElementChild;
                 MarkRow(date_obj, b, link);
                 UpdateText();
                 tr.style.backgroundColor = '';
             }
-            if (!z.title.includes("перепроверять")) z.remove();
+            //if (!z.title.includes("перепроверяем")) z.remove(); 
             z.processing = false;
-            z.textContent = z.title.includes("перепроверять") ? "[>>]" : "[>]";
+            z.textContent = z.title.includes("перепроверяем") ? "[>>]" : "[>]";
         }
     }
+    const flexbreak = document.createElement("z");
+    flexbreak.className = "flex_break";
+    LogsCheck_container.appendChild(flexbreak);
 
     const z1 = document.createElement("z");
-    z1.setAttribute("style", z_unknown.getAttribute("style"));
-    z1.textContent = "[>]";
-    z1.setTitle = function () {
+    z1.className = "pointer_link";
+    z1.setTitleAndText = function () {
         this.title = this.processing ?
             "Нажмите для остановки проверки" :
             "Проверить, загружены ли логи на https://gv.erinome.net/duels/log (игнорировать [-]/[+])";
+        this.textContent = this.processing ? "[||]" : "[>]";
     }
-    z1.setTitle();
+    z1.setTitleAndText();
     //skip ALL already executed
     z1.onclick = () => CheckLogsActions(z1, dom_arr().filter(x => {
         const tr = x.parentNode.parentNode;
@@ -419,40 +494,30 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
     LogsCheck_container.appendChild(z1);
 
     const z2 = document.createElement("z");
-    z2.textContent = "[>>]";
-    z2.setAttribute("style", z_unknown.getAttribute("style"));
-    z2.setTitle = function () {
+    z2.className = "pointer_link";
+    z2.setTitleAndText = function () {
         this.title = this.processing ?
             "Нажмите для остановки проверки" :
             "Проверить, загружены ли логи на https://gv.erinome.net/duels/log (перепроверяем все [-], игнорируем [+])";
+        this.textContent = this.processing ? "[||]" : "[>>]";
     }
-    z2.setTitle();
+    z2.setTitleAndText();
     z2.onclick = () => CheckLogsActions(z2, dom_arr().filter(x => {
         const tr = x.parentNode.parentNode;
         return !tr.firstElementChild.textContent.includes('[+]'); //исключаем только [+]
     }));
     LogsCheck_container.appendChild(z2);
 
-    after_node.after(LogsCheck_container);
+    if (wup) input_node.prepend(LogsCheck_container); else input_node.after(LogsCheck_container);
 
     //listener
-    chrome.storage.onChanged.addListener((changes, area) => {
-        console.log("Change in storage area: " + area, changes);
-        for (let ch_key of Object.keys(changes)) {
-            if (ch_key == "MyGV_NotLoadedLogs" || ch_key == "MyGV_LoadedLogs") {
-                let new_arr = Array.from(changes[ch_key].newValue);
-                let old_arr = Array.from(changes[ch_key].oldValue);
-                let add_arr = new_arr.filter(id => !old_arr.includes(id));
-                if (add_arr && add_arr.length > 0) {
-                    //console.log(ch_key, add_arr);
-                    DrawUI(add_arr, ch_key);
-                    if (ch_key == 'MyGV_LoadedLogs') {
-                        saved_array = changes[ch_key].newValue;
-                    } else {
-                        unsaved_array = changes[ch_key].newValue;
-                    }
-                }
-            }
+    AddAbstractChromeStorageListener("Duels_history", (add_arr, new_arr, ch_key) => {
+        //console.log(ch_key, add_arr);
+        DrawUI(add_arr, ch_key);
+        if (ch_key == 'MyGV_LoadedLogs') {
+            saved_array = new_arr;
+        } else {
+            unsaved_array = new_arr;
         }
     });
 }
@@ -495,5 +560,73 @@ function fillMiniQuestsTitles(callback) {
         fillMiniQuestsToStorage(mini_quests);
         console.log('Setting mini quests, to browser storage');
         callback();
+    });
+}
+
+//shared && superhero.js && logs.js
+function MarkRow(row_obj, url_exist, link) {
+    //console.log("MarkRow", row_obj, url_exist);
+    const new_text = `[${url_exist ? '+' : '-'}]`;
+    let a = row_obj.querySelector("a.pointer_link");
+    if (!a) {
+        a = CreateLogLinkCheckingButtonObject(link);
+        a.style.textDecoration = "none";
+        a.textContent = new_text;
+        row_obj.prepend(a, " ");
+    } else if (new_text == "[+]") {
+        a.textContent = "[+]";
+    } else if (!a.textContent || new_text == a.textContent) {
+        a.textContent = new_text;
+    } else {
+        a.textContent = `${a.textContent.slice(0, -1)}->${new_text.slice(1)}`;
+    }
+    if (a.textContent == "[+]") {
+        a.onclick = (e) => {
+            e.preventDefault();
+            window.open(link, '_blank');
+        }
+        a.title = "";
+    }
+    return a;
+}
+//superhero.js && logs.js
+function CreateLogLinkCheckingButtonObject(id) {
+    const a = document.createElement("a");
+    a.className = "pointer_link";
+    a.textContent = "[?]";
+    a.title = "~Нажмите, чтобы проверить существование лога на gv.erinome.net/";
+    const link = id.includes("/duels/log/") ? id : "https://gv.erinome.net/duels/log/" + id;
+    a.setAttribute("href", link);
+    a.onclick = async (e) => {
+        e.preventDefault();
+        const b = await UrlExistsAsync(link);
+        a.textContent = b ? "[+]" : "[-]";
+        a.style.backgroundColor = a.style.backgroundColor ? "" : "aqua";
+        AppendToArrayInStorage(b ? "MyGV_LoadedLogs" : "MyGV_NotLoadedLogs", id);
+        if (b) {
+            RemoveFromArrayInStorage("MyGV_NotLoadedLogs", id);
+            a.onclick = null;
+            a.title = "";
+        }
+    }
+    return a;
+}
+function EditAByChromeStorageData(a, id) {
+    //return
+    chrome.storage.local.get("MyGV_LoadedLogs").then(obj => {
+        if (obj && obj["MyGV_LoadedLogs"] && obj["MyGV_LoadedLogs"].includes(id)) {
+            a.textContent = "[+]";
+            a.removeAttribute("title");
+            a.onclick = (e) => {
+                e.preventDefault();
+                window.open(link, '_blank');
+            }
+            return a;
+        }
+        chrome.storage.local.get("MyGV_NotLoadedLogs").then(obj2 => {
+            if (obj2 && obj2["MyGV_NotLoadedLogs"] && obj2["MyGV_NotLoadedLogs"].includes(id)) {
+                a.textContent = "[-]";
+            }
+        });
     });
 }

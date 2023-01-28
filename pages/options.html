@@ -13,26 +13,26 @@
 			<div class="new_line">
 				<label class="l_capt">Debug mode</label>
 				<div class="field_content">
-					<input id="debug" class="savable" type="checkBox">
-				</div>
-			</div>
-			<div class="new_line">
-				<label class="l_capt">MyTestString</label>
-				<div class="field_content">
-					<input id="MyTestString">
+					<input id="debug" class="savable" type="checkbox">
 				</div>
 			</div>
 			<div class="new_line">
 				<button id="save">Сохранить</button>
 				<button class="debug" id="load">Load</button>
-				<button class="debug" id="clearOptions">clearOptions</button>
+				<button class="debug" id="clearStorage">clearStorage</button>
 				<button class="debug" id="Print">PrintOptions (ToBox&Console)</button>
 			</div>
-		</div>
-		<div class="debug" class="new_line">
-			<label class="less_capt">Options</label>
-			<div class="field_content_extented">
-				<textarea class="rounded_field savable" id="options_str"></textarea>
+			<div class="new_line debug" id="options">
+				<div class="less_capt no_padding">
+					<button class="clear">❌</button>
+					<label>options</label>
+				</div>
+				<div class="field_content">
+					<label class="title_print">?</label>
+				</div>
+			</div>
+			<div class="new_line debug">
+				<textarea class="rounded_field" id="options_str"></textarea>
 			</div>
 		</div>
 		<div class="g_desc" id="status"></div>
@@ -51,7 +51,7 @@
 						местностей</label>
 				</div>
 				<div class="field_content">
-					<label>?</label>
+					<label class="title_print">?</label>
 				</div>
 			</div>
 			<div class="new_line" id="seaMonsters">
@@ -62,7 +62,7 @@
 						рыб</label>
 				</div>
 				<div class="field_content">
-					<label>?</label>
+					<label class="title_print">?</label>
 				</div>
 			</div>
 			<div class="new_line" id="AutoGV_miniQuests">
@@ -73,27 +73,27 @@
 						title="https://godville.net/forums/show_topic/2460?page=254#post_1560386">мини-квестов</label>
 				</div>
 				<div class="field_content">
-					<label>?</label>
+					<label class="title_print">?</label>
 				</div>
 			</div>
 			<div class="new_line debug" id="MyGV_LoadedLogs">
 				<div class="less_capt">
 					<button class="delete">[-]</button>
 					<button class="append">[+]</button>
-					<label>"y1dxtz2" для словаря MyGV_LoadedLogs</label>
+					<label>"value из input справа" для словаря MyGV_LoadedLogs</label>
 				</div>
 				<div class="field_content">
-					<label>?</label>
+					<input class="title_print savable" id="MyGV_LoadedLogs_input">
 				</div>
 			</div>
 			<div class="new_line debug" id="MyGV_NotLoadedLogs">
 				<div class="less_capt">
 					<button class="delete">[-]</button>
 					<button class="append">[+]</button>
-					<label>"y1dxtz2" для словаря MyGV_NotLoadedLogs</label>
+					<label>"value из input справа" для словаря MyGV_NotLoadedLogs</label>
 				</div>
 				<div class="field_content">
-					<label>?</label>
+					<input class="title_print savable" id="MyGV_NotLoadedLogs_input">
 				</div>
 			</div>
 		</div>
@@ -104,23 +104,23 @@
 			<div class="new_line">
 				<label class="l_capt">Автонажатие оценок чужих гласов</label>
 				<div class="field_content">
-					<input type="checkBox" class="hidingSmthngCheckbox savable" id="pluses">
+					<input type="checkbox" class="hidingSmthngCheckbox savable" id="pluses">
 				</div>
 			</div>
-			<div class="new_line" id="plusesNewLine">
+			<div class="new_line" id="pluses_NewLine">
 				<label class="less_capt">Общие правила</label>
 				<div class="field_content">
-					<select id="plusesSelect">
+					<select id="pluses_Select">
 						<option value="Random">Рандомно</option>
 						<option value="Pluse">Всегда плюс</option>
 						<option value="Minuse">Все минусы</option>
 					</select>
 				</div>
 			</div>
-			<div class="new_line" id="plusesRelayNewLine">
+			<div class="new_line" id="pluses_Relay_NewLine">
 				<label class="less_capt">Эстафеты</label>
 				<div class="field_content">
-					<select id="plusesRelaySelect">
+					<select id="pluses_Relay_Select">
 						<option value="General">По общим правилам</option>
 						<option value="Random">Рандомно</option>
 						<option value="Plus">Всегда плюс</option>
@@ -128,10 +128,10 @@
 					</select>
 				</div>
 			</div>
-			<div class="new_line" id="plusesNewGodsNewLine">
+			<div class="new_line" id="pluses_NewGods_NewLine">
 				<label class="less_capt">Лоулевельные авторы</label>
 				<div class="field_content">
-					<select id="plusesNewGodsSelect">
+					<select id="pluses_NewGods_Select">
 						<option value="General">По общим правилам</option>
 						<option value="Random">Рандомно</option>
 						<option value="Plus">Всегда плюс</option>
@@ -142,27 +142,27 @@
 			<div class="new_line">
 				<label class="l_capt">Автозаинвайчивание монстров</label>
 				<div class="field_content">
-					<input type="checkBox" class="hidingSmthngCheckbox savable" id="AutoInvite">
+					<input type="checkbox" class="hidingSmthngCheckbox savable" id="AutoInvite">
 				</div>
 			</div>
-			<div class="new_line" id="AutoInviteNewLine">
+			<div class="new_line" id="AutoInvite_NewLine">
 				<label class="less_capt">Список</label>
 				<div class="field_content_extented">
-					<textarea class="rounded_field" id="AutoInviteMonsters"></textarea>
+					<textarea class="rounded_field savable" id="AutoInvite_Monsters"></textarea>
 				</div>
 			</div>
 			<div class="new_line">
 				<label class="l_capt">Автопрокликивание бесплатных активашек</label>
 				<div class="field_content">
-					<input type="checkBox" class="hidingSmthngCheckbox savable" id="Activators">
+					<input type="checkbox" class="hidingSmthngCheckbox savable" id="Activators">
 				</div>
 			</div>
-			<div class="new_line" id="ActivatorsNewLine">
+			<div class="new_line" id="Activators_NewLine">
+				<label class="less_capt">Условия</label>
 				<div class="field_content">
-					<select id="Activators_Select">
+					<select class="savable" id="Activators_Select">
 						<option value="AllTime">Всегда</option>
-						<option value="OnlyNotForeCast">Всегда, за исключением прогноза на дорогие активашки
-						</option>
+						<option value="OnlyNotForeCast">Всегда, за исключением прогноза на дорогие активашки</option>
 					</select>
 				</div>
 			</div>
@@ -177,13 +177,13 @@
 			<div class="new_line">
 				<label class="less_capt">Авторешатель кроссворда</label>
 				<div class="field_content">
-					<input type="checkBox" id="NewsPage_AutoCrossword_Checkbox">
+					<input type="checkbox" class="savable" id="NewsPage_AutoCrossword_Checkbox">
 				</div>
 			</div>
 			<div class="new_line">
 				<label class="less_capt">Автозабирание процента праноконденсатора</label>
 				<div class="field_content">
-					<input type="checkBox" id="NewsPage_AutoCond_Checkbox">
+					<input type="checkbox" class="savable" id="NewsPage_AutoCond_Checkbox">
 				</div>
 			</div>
 			<div class="new_line">
@@ -192,64 +192,64 @@
 			<div class="new_line">
 				<label class="less_capt">Hp (всплывающая подсказка при наведении на уровень)</label>
 				<div class="field_content">
-					<input type="checkBox" id="GodsPage_HPShowingCheckbox">
+					<input type="checkbox" class="savable" id="GodsPage_HPShowingCheckbox">
 				</div>
 			</div>
 			<div class="new_line">
 				<label class="less_capt">Примерную дату регистрации (по возрасту у всех богов), точную (до дня) у
 					себя</label>
 				<div class="field_content">
-					<input type="checkBox" id="GodsPage_RegistrationDateShowingCheckbox">
+					<input type="checkbox" class="savable" id="GodsPage_RegistrationDateShowingCheckbox">
 				</div>
 			</div>
 			<br>
 			<div class="new_line">
 				<label class="less_capt">Примерное время постройки храма</label>
 				<div class="field_content">
-					<input type="checkBox" id="GodsPage_TempleConstructingTimeShowingCheckbox">
+					<input type="checkbox" class="savable" id="GodsPage_TempleConstructingTimeShowingCheckbox">
 				</div>
 			</div>
 			<div class="new_line">
 				<label class="less_capt">Время постройки ковчега</label>
 				<div class="field_content">
-					<input type="checkBox" id="GodsPage_ArkConstructingTimeShowingCheckbox">
+					<input type="checkbox" class="savable" id="GodsPage_ArkConstructingTimeShowingCheckbox">
 				</div>
 			</div>
 			<div class="new_line">
 				<label class="less_capt">Время сбора первых 1000 тварей</label>
 				<div class="field_content">
-					<input type="checkBox" id="GodsPage_PairsCollectingTimeShowingCheckbox">
+					<input type="checkbox" class="savable" id="GodsPage_PairsCollectingTimeShowingCheckbox">
 				</div>
 			</div>
 			<div class="new_line">
 				<label class="less_capt">Время написания книги (без учета времени сбора босса)</label>
 				<div class="field_content">
-					<input type="checkBox" id="GodsPage_BookWritingTimeShowingCheckbox">
+					<input type="checkbox" class="savable" id="GodsPage_BookWritingTimeShowingCheckbox">
 				</div>
 			</div>
 			<div class="new_line">
 				<label class="less_capt">Время собирания лавки</label>
 				<div class="field_content">
-					<input type="checkBox" id="GodsPage_SavingsCollectingTimeShowingCheckbox">
+					<input type="checkbox" class="savable" id="GodsPage_SavingsCollectingTimeShowingCheckbox">
 				</div>
 			</div>
 			<div class="new_line">
 				<label class="less_capt">Время сбора душ</label>
 				<div class="field_content">
-					<input type="checkBox" id="GodsPage_SoulsCollectingTimeShowingCheckbox">
+					<input type="checkbox" class="savable" id="GodsPage_SoulsCollectingTimeShowingCheckbox">
 				</div>
 			</div>
 			<br>
 			<div class="new_line">
 				<label class="less_capt">Статистика экипировки (среднее, разница среднего с уровнем)</label>
 				<div class="field_content">
-					<input type="checkBox" id="GodsPage_EquipStatsShowingCheckbox">
+					<input type="checkbox" class="savable" id="GodsPage_EquipStatsShowingCheckbox">
 				</div>
 			</div>
 			<div class="new_line">
 				<label class="less_capt">Мин\макс цен на прокачку умений</label>
 				<div class="field_content">
-					<input type="checkBox" id="GodsPage_SkilsPricesShowingCheckbox">
+					<input type="checkbox" class="savable" id="GodsPage_SkilsPricesShowingCheckbox">
 				</div>
 			</div>
 			<div class="new_line">
@@ -258,13 +258,13 @@
 			<div class="new_line">
 				<label class="less_capt">Улучшенные списки гласов (обе: малая и отдельная)</label>
 				<div class="field_content">
-					<input type="checkBox" id="Superhero_ImprovedGodVoicesHistoryCheckbox">
+					<input type="checkbox" class="savable" id="Superhero_ImprovedGodVoicesHistoryCheckbox">
 				</div>
 			</div>
 			<div class="new_line">
 				<label class="less_capt">Добавить динамическую ссылку на калькулятор босса в лаборатории</label>
 				<div class="field_content">
-					<input type="checkBox" id="Superhero_LaboratoryLinkCheckbox">
+					<input type="checkbox" class="savable" id="Superhero_LaboratoryLinkCheckbox">
 				</div>
 			</div>
 			<div class="new_line">
@@ -274,7 +274,7 @@
 				<label class="less_capt">Рисовать риску [% - %+1] задания для определения стадии выполнения
 					задания</label>
 				<div class="field_content">
-					<input type="checkBox" id="Superhero_TaskPercRiskShowingCheckbox">
+					<input type="checkbox" class="savable" id="Superhero_TaskPercRiskShowingCheckbox">
 				</div>
 			</div>
 			<div class="new_line">
@@ -283,7 +283,7 @@
 			<div class="new_line">
 				<label class="less_capt">//Поставить дополнительную риску на 30%</label>
 				<div class="field_content">
-					<input type="checkBox" id="Superhero_30PercRiskShowingCheckbox">
+					<input type="checkbox" class="savable" id="Superhero_30PercRisk_DungeonShowingCheckbox">
 				</div>
 			</div>
 			<div class="new_line">
@@ -292,7 +292,7 @@
 			<div class="new_line">
 				<label class="less_capt">Поставить дополнительную риску на 30%</label>
 				<div class="field_content">
-					<input type="checkBox" id="Superhero_30PercRiskShowingCheckbox">
+					<input type="checkbox" class="savable" id="Superhero_30PercRisk_SeaShowingCheckbox">
 				</div>
 			</div>
 		</div>

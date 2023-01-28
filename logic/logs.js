@@ -2,47 +2,49 @@
 //https://gv.erinome.net/duels/log/apq4exf4c (forever, find any at https://gv.erinome.net/duels/log)
 //https://godville.net/duels/log/apq4exf4c (expired 3 month)
 //https://gdvl.tk/duels/log/apq4e
+//общее
 const id = document.location.pathname.replaceAll("/duels/log/", "");
 if (document.location.href.includes("https://gv.erinome.net/duels/log/")) {
 	const propertyText = document.title.includes("404 Not Found") ? 'MyGV_NotLoadedLogs' : 'MyGV_LoadedLogs';
 	AppendToArrayInStorage(propertyText, id);
 	if (propertyText == 'MyGV_LoadedLogs') RemoveFromArrayInStorage("MyGV_NotLoadedLogs", id);
 } else if (document.location.href.includes("https://godville.net/duels/log/")) {
-	let a = document.createElement("a");
-	a.textContent = "[?]";
-	a.title = "Проверить существование лога на gv.erinome.net/";
-	a.onclick = async (e) => {
-		let link = "https://gv.erinome.net/duels/log/" + id;
-		let b = await UrlExistsAsync(link);
-		a.textContent = b ? "[+]" : "[-]";
-		AppendToArrayInStorage(b ? "MyGV_LoadedLogs" : "MyGV_NotLoadedLogs", id);
-		if (b) {
-			RemoveFromArrayInStorage("MyGV_NotLoadedLogs", id);
-			a.onclick = null;
-			a.title = "";
-		}
-		e.preventDefault();
-	}
-	chrome.storage.local.get("MyGV_LoadedLogs").then(obj => {
-		if (!obj) return;
-		if (obj["MyGV_LoadedLogs"].includes(id)) {
-			a.textContent = "[+]";
-			a.title = "";
-			a.onclick = null;
-			return;
-		}
-		chrome.storage.local.get("MyGV_NotLoadedLogs").then(obj2 => {
-			if (!obj2) return;
-			if (obj2["MyGV_NotLoadedLogs"].includes(id)) {
-				a.textContent = "[-]";
+	const a = CreateLogLinkCheckingButtonObject(id);
+	EditAByChromeStorageData(a, id);
+
+	function qcallback(obs) {
+		const q = document.querySelector(".lastduelpl_f");
+		console.log(obs, "qcallback", q.innerHTML, q.lastChild.innerHTML);
+		if (q?.textContent.includes("[")) {
+			if (obs?.disconnect) {
+				obs.disconnect();
+				return true;
 			}
+		} else if (q?.textContent.includes("Сохранить в")) {
+			q.lastChild.append(" ");
+			q.lastChild.appendChild(a);
+			return true;
+		}
+		return false;
+	}
+	if (!qcallback()) {
+		const config = {
+			childList: true,
+			subtree: true
+		};
+		const observer = new MutationObserver(qcallback);
+		observer.observe(document.querySelector(".lastduelpl_f"), config);
+		console.log("observer was added to .lastduelpl_f");
+	}
+
+	//listener
+	AddAbstractChromeStorageListener("Logs", (add_arr, new_arr, ch_key) => {
+		console.log("add_arr", add_arr);
+		add_arr.forEach(x_id => {
+			const bool = (ch_key == 'MyGV_LoadedLogs') ? true : (ch_key == 'MyGV_NotLoadedLogs') ? false : undefined;
+			if (bool != undefined && id == x_id) MarkRow(a.parentNode, bool, "https://gv.erinome.net/duels/log/" + x_id);
 		});
 	});
-	let q = document.querySelector(".lastduelpl_f");
-	if (q && q.lastChild) {
-		q.lastChild.append(" ");
-		q.lastChild.appendChild(a);
-	}
 }
 
 class PolygonLog {

@@ -95,6 +95,10 @@ body {
     width: 75%;
 }
 
+.title_print {
+    font-size: 85%;
+}
+
 .rounded_field {
     resize: vertical;
     width: 100%;

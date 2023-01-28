@@ -76,6 +76,19 @@ chrome.runtime.onMessage.addListener(
 	}
 );
 
+//https://stackoverflow.com/questions/10994324/chrome-extension-content-script-re-injection-after-upgrade-or-install/11598753#11598753
+chrome.runtime.onInstalled.addListener(async () => {
+	console.log("reconnected3");
+	for (const cs of chrome.runtime.getManifest().content_scripts) {
+		for (const tab of await chrome.tabs.query({ url: cs.matches })) {
+			chrome.scripting.executeScript({
+				target: { tabId: tab.id },
+				files: cs.js,
+			});
+		}
+	}
+});
+
 function PrintStorage(key) {
 	chrome.storage.local.get(key, obj => {
 		if (!chrome.runtime.error) {

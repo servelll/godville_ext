@@ -34,7 +34,7 @@ function AddLogsHistoryPopupObserver() {
 		//wait until wup will load
 		const observer_callback = function (mutationsList, observer) {
 			observer.disconnect();
-			AddErinomeLogsCheckingActions(wup, document.querySelector("#lf_popover_c > div:nth-child(2)"));
+			AddErinomeLogsCheckingActions(wup, document.querySelector("#lf_popover_c div:not(.wl_line)"));
 		};
 		const observer = new MutationObserver(observer_callback);
 		observer.observe(wup.querySelector("#lf_popover_c"), { childList: true });
@@ -215,6 +215,32 @@ function AddChroniqueStepObserver() {
 	observer.observe(title_chronique, config);
 
 	console.log("AddChroniqueStepObserver done");
+}
+
+function AddThirdEyeObserver() {
+	AddAbstactPopupObserver("ThirdEye", "Третий глаз", function (wup, wup_title) {
+		const links = wup.getElementsByClassName("div_link");
+		for (const a of links) {
+			const id = a.getAttribute("href").replaceAll("/duels/log/", "");
+			const my_a = CreateLogLinkCheckingButtonObject(id);
+			EditAByChromeStorageData(my_a, id);
+			const d_msg = a.parentNode.parentNode;
+			const my_span = document.createElement("span");
+			my_span.append(" ");
+			my_span.appendChild(my_a);
+			d_msg.appendChild(my_span);
+		}
+
+		const pointer_links = Array.from(wup.getElementsByClassName("pointer_link") ?? []);
+		AddAbstractChromeStorageListener("ThirdEye", (add_arr, new_arr, ch_key) => {
+			console.log("add_arr", add_arr, ch_key);
+			add_arr.forEach(x_id => {
+				const filtered = pointer_links.find(a => a.getAttribute("href").includes(x_id));
+				const bool = (ch_key == 'MyGV_LoadedLogs') ? true : (ch_key == 'MyGV_NotLoadedLogs') ? false : undefined;
+				if (bool != undefined && filtered) MarkRow(filtered.parentNode, bool, "https://gv.erinome.net/duels/log/" + x_id);
+			});
+		});
+	});
 }
 
 

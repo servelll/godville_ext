@@ -28,6 +28,9 @@
 			"js": [
 				"logic/shared.js",
 				"logic/last_fight.js"
+			],
+			"css": [
+				"logic/shared.css"
 			]
 		},
 		{
@@ -35,12 +38,12 @@
 				"https://*/duels/log/*",
 				"file:///*/Godville/*"
 			],
-			"css": [
-				"logic/logs.css"
-			],
 			"js": [
 				"logic/shared.js",
 				"logic/logs.js"
+			],
+			"css": [
+				"logic/shared.css"
 			]
 		},
 		{
@@ -52,6 +55,7 @@
 				"logic/news.js"
 			],
 			"css": [
+				"logic/shared.css",
 				"logic/news.css"
 			]
 		},
@@ -65,6 +69,7 @@
 				"logic/superhero.js"
 			],
 			"css": [
+				"logic/shared.css",
 				"logic/superhero.css"
 			],
 			"run_at": "document_end"
@@ -73,12 +78,12 @@
 			"matches": [
 				"https://godville.net/gods/*"
 			],
-			"css": [
-				"logic/gods.css"
-			],
 			"js": [
 				"lib/moment.min.js",
 				"logic/gods.js"
+			],
+			"css": [
+				"logic/gods.css"
 			]
 		}
 	],
@@ -91,7 +96,8 @@
 	"permissions": [
 		"activeTab",
 		"identity",
-		"storage"
+		"storage",
+		"scripting"
 	],
 	"host_permissions": [
 		"https://gv.erinome.net/",
