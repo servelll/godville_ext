@@ -456,29 +456,29 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
         }
     });
 }
-//supehero.js && options.html
+//superhero.js && options.js
 function fillMiniQuestsTitles(callback) {
     async function parseMiniQuestsTitles(link) {
-        let html = await getPageFromUrl(link);
-        let raw_data = html.querySelector("#post-body-1560386").textContent;
-        let data = raw_data.slice(raw_data.indexOf('Старые мини-квесты') + 18).replace("\nНовые мини-квесты", ' * Metka * ').replace('\n', '').trim();
-        let rawMass = data.split(' * ');
-        let oldQuests = rawMass.slice(0, rawMass.indexOf('Metka'));
-        let newQuests = rawMass.slice(rawMass.indexOf('Metka') + 1);
+        const html = await getPageFromUrl(link);
+        const raw_data = html.querySelector("#post-body-1560386").textContent;
+        const data = raw_data.slice(raw_data.indexOf('Старые мини-квесты') + 18).replace("\nНовые мини-квесты", ' * Metka * ').replace('\n', '').trim();
+        const rawMass = data.split(' * ');
+        const oldQuests = rawMass.slice(0, rawMass.indexOf('Metka'));
+        const newQuests = rawMass.slice(rawMass.indexOf('Metka') + 1);
         return { oldQuests, newQuests: newQuests };
     }
 
     function fillMiniQuestsToStorage(miniQuests) {
         const regy = /([А-ЯЁ0-9][^\→]+)(?=(\→|$))/gi;
         const warning = '(в этом мини-квесте часто этапы меняются местами)';
-        let AutoGV_miniQuests = {};
-        for (let key in miniQuests) {
+        const AutoGV_miniQuests = {};
+        for (const key in miniQuests) {
             AutoGV_miniQuests[key] = {
                 recency: (key == 'oldQuests') ?
                     'старый мини-квест (после битвы с боссами в старых миниках – покрасневший герой не идет в город на полный цикл)' :
                     'новый мини-квест (Если выйти с босса или банды нового миника на красном или дохлым – гарантирован полный цикл)',
                 quests: miniQuests[key].map(el => {
-                    let quest = {};
+                    const quest = {};
                     if (el.includes(warning)) {
                         quest.warning = warning;
                     }
@@ -488,7 +488,7 @@ function fillMiniQuestsTitles(callback) {
             }
         }
         browser.storage.local.set({ AutoGV_miniQuests });
-        SetToStorage("AutoGV_miniQuests_lastDate", new Date().toLocaleString());
+        SetToStorage("AutoGV_miniQuests_last", new Date().toLocaleString());
     }
 
     parseMiniQuestsTitles("https://godville.net/forums/show_topic/2460?page=254#post_1560386").then(mini_quests => {
