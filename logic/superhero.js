@@ -219,14 +219,16 @@ function AddChroniqueStepObserver() {
 
 
 function AddPolygonStepObserver() {
-	let polygon_chronuque = document.querySelector("#a_central_block div.block_h h2");
+	let timerId;
+
+	const polygon_title_h2 = document.querySelector("#a_central_block div.block_h h2");
 	let div = document.getElementById("MyGV_PolygonTimeBeforeEndHint");
 	if (!div) {
 		div = document.createElement("div");
 		div.id = "MyGV_PolygonTimeBeforeEndHint";
 		div.title = "осталось секунд до конца полигона";
 		div.style.display = "inline";
-		polygon_chronuque.nextSibling.appendChild(div);
+		polygon_title_h2.nextSibling.appendChild(div);
 	}
 
 	const config = {
@@ -235,19 +237,24 @@ function AddPolygonStepObserver() {
 	};
 	const callback = function (mutationsList, observer) {
 		console.log("AddPolygonStepObserver callback");
-		//let substep_in_perc = document.querySelector("#turn_pbar .p_val");
-		let re = /\d+/g;
-		let step = Number(re.exec(polygon_chronuque.textContent)[0]);
-		let seconds_left = (41 - step) * 20;
-		let timerId = setTimeout(function tick() {
-			div.textContent = seconds_left--;
-			timerId = setTimeout(tick, 1000);
-		}, 1000);
-		//observer.disconnect();
+		//const substep_in_perc = document.querySelector("#turn_pbar .p_val");
+		if (polygon_title_h2 && polygon_title_h2.textContent) console.log(polygon_title_h2.innerHTML);
+		const match = /\d+/g.exec(polygon_title_h2.textContent);
+		if (match) {
+			const step = Number(match[0]);
+			let msseconds_left = (41 - step) * 20;
+			clearTimeout(timerId);
+			timerId = setTimeout(function tick() {
+				div.textContent = msseconds_left-- + "s";
+				clearTimeout(timerId);
+				timerId = setTimeout(tick, 1000);
+			}, 1000);
+			//observer.disconnect();
+		}
 	};
 
 	const observer = new MutationObserver(callback);
-	observer.observe(polygon_chronuque.firstChild, config);
+	observer.observe(polygon_title_h2, config);
 	callback();
 
 	//add boss letters as titles
