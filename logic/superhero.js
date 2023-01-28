@@ -667,9 +667,56 @@ function AddPetLink() {
 	pet.setAttribute('href', "https://wiki.godville.net/Питомец");
 	pet.style.cursor = "pointer";
 	pet.onclick = function (e) {
-		window.open(this.getAttribute("href"), '_blank');
 		e.preventDefault();
+		window.open(this.getAttribute("href"), '_blank');
 	}
+}
+
+function AddSkillsTypesNumbers() {
+	const skills_left = document.querySelector("#skills .l_slot");
+	const div = document.createElement("div");
+	div.id = "skill_badge2";
+	div.className = "fr_new_badge e_badge_pos m_hover";
+	const callback = function (mutationsList, observer) {
+		const arr = Array.from(document.querySelectorAll("#skills .skills_block li .skill_info"));
+		const text_arr = arr.map(span => span.textContent);
+		const c = ["боевое", "торговое", "трансп"].map(str => text_arr.filter(s => s.includes(str)).length);
+		div.textContent = `${c[0]}/${c[1]}/${c[2]}`;
+		div.title = `Количество умений:
+	${c[0]} боевых
+	${c[1]} торговых
+	${c[2]} транспортных`;
+		if (observer) alert("updated AddSkillsTypesNumbers");
+	}
+	callback();
+	skills_left.appendChild(div);
+
+	//listener
+	const target = document.querySelector("#skills .block_content");
+	const config = {
+		characterData: true,
+		childList: true,
+		subtree: true
+	};
+
+	const observer = new MutationObserver(callback);
+	observer.observe(target, config);
+
+	console.log("AddSkillsTypesNumbers done");
+}
+
+function AddResizeCentralBlock() {
+	const arr = ["central_block", "a_central_block"].map(t => document.getElementById(t));
+	const central_block = arr.find(node => node.childNodes.length > 0);
+	function SetWidth() {
+		const new_width = window.innerWidth - 560;
+		if (new_width > 400) central_block.style.width = new_width + "px";
+	}
+	SetWidth();
+	window.addEventListener("resize", (e) => {
+		//console.log("AddResizeCentralBlock central_block", central_block);
+		SetWidth();
+	});
 }
 
 //листенер ожидания реальной прогрузки документа в первый раз 
@@ -687,6 +734,8 @@ waitForContents(() => {
 		AddLogsHistoryPopupObserver();
 		AddLaboratoryPopupObserver();
 		AddGodVoicesPopupObserver();
+		AddThirdEyeObserver();
+		AddResizeCentralBlock();
 	}
 
 	const title_chronique = document.querySelector("#m_fight_log div.block_h > h2");
@@ -713,6 +762,7 @@ waitForContents(() => {
 		UpdateMiniQuestsDB();
 		AddMiniQuestListeners();
 		AddPetLink();
+		AddSkillsTypesNumbers();
 
 		temp_will_run_state.push("diary");
 	}
