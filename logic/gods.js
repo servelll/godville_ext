@@ -1,13 +1,13 @@
 if (document.URL.slice(-5) != ".json") {
     //equip
-    let eq_mas = Array.from(document.querySelectorAll("#equipment tr .value"));
-    let sum = eq_mas.reduce((acc, i) => acc + (i.textContent != "" ? parseInt(i.textContent) : -11), 0);
-    let count = eq_mas.filter(i => i.textContent != "").length;
-    let middle = (sum / count).toFixed(1);
-    let lvl = parseInt(document.querySelector("#essential_info > p.level").textContent);
-    let v1 = Math.round(30 * (sum + 77) / 7);
-    let text1 = `Сумма [${sum}]/${count}; Очков мастерства [${v1}]`;
-    let text2 = `Среднее [${middle}]; Относительно уровня [${(middle - lvl).toFixed(1)}]`;
+    const eq_mas = Array.from(document.querySelectorAll("#equipment tr .value"));
+    const sum = eq_mas.reduce((acc, i) => acc + (i.textContent != "" ? parseInt(i.textContent) : -11), 0);
+    const count = eq_mas.filter(i => i.textContent != "").length;
+    const middle = (sum / count).toFixed(1);
+    const lvl = parseInt(document.querySelector("#essential_info > p.level").textContent);
+    const v1 = Math.round(30 * (sum + 77) / 7);
+    const text1 = `Сумма [${sum}]/${count}; Очков мастерства [${v1}]`;
+    const text2 = `Среднее [${middle}]; Относительно уровня [${(middle - lvl).toFixed(1)}]`;
     document.querySelector("#column_2").insertBefore(document.createElement("br"), document.querySelector("#column_2 > div"));
     document.querySelector("#column_2").insertBefore(document.createTextNode(text1), document.querySelector("#column_2 > div"));
     document.querySelector("#column_2").insertBefore(document.createElement("br"), document.querySelector("#column_2 > div"));
@@ -15,49 +15,49 @@ if (document.URL.slice(-5) != ".json") {
 
     //skills
     let v3 = 0;
-    let where2 = document.querySelector("#column_2 > .b_list");
+    const where2 = document.querySelector("#column_2 > .b_list");
     if (where2) {
-        let sk_mas = Array.from(where2.querySelectorAll("li span"));
-        let sum2 = sk_mas.reduce((acc, i) => acc + (i.textContent != "" ? parseInt(i.textContent) : 0), 0);
+        const sk_mas = Array.from(where2.querySelectorAll("li span"));
+        const sum2 = sk_mas.reduce((acc, i) => acc + (i.textContent != "" ? parseInt(i.textContent) : 0), 0);
         v3 = (10 * sum2);
-        let text4 = `Очков мастерства [${v3}]`;
+        const text4 = `Очков мастерства [${v3}]`;
         document.querySelector("#column_2").appendChild(document.createElement("br"));
         document.querySelector("#column_2").appendChild(document.createTextNode(text4));
 
-        let text5 = `Деньги [${500 * parseInt(sk_mas[sk_mas.length - 1].textContent) + 500} - ${500 * parseInt(sk_mas[0].textContent) + 500}]`;
+        const text5 = `Деньги [${500 * parseInt(sk_mas[sk_mas.length - 1].textContent) + 500} - ${500 * parseInt(sk_mas[0].textContent) + 500}]`;
         document.querySelector("#column_2").appendChild(document.createElement("br"));
         document.querySelector("#column_2").appendChild(document.createTextNode(text5));
     }
 
-    let tr_mas = Array.from(document.querySelectorAll("#panteons > tbody > tr"));
-    let master_pantheon = tr_mas.filter(i => i.innerText.includes("Мастерства"));
+    const tr_mas = Array.from(document.querySelectorAll("#panteons > tbody > tr"));
+    const master_pantheon = tr_mas.filter(i => i.innerText.includes("Мастерства"));
     if (master_pantheon.length == 1) {
-        let _sum = document.createElement("z");
+        const _sum = document.createElement("z");
         _sum.className = "_sum";
         _sum.textContent = ` [${v1 + v3}]`;
         master_pantheon[0].querySelector(".name").appendChild(_sum);
     }
 
     //hp
-    let lvl_1 = document.querySelector("#essential_info > p.level").firstChild;
-    let z = document.createElement("z");
+    const lvl_1 = document.querySelector("#essential_info > p.level").firstChild;
+    const z = document.createElement("z");
     z.title = `${4 * lvl + 96} hp`;
     z.textContent = lvl_1.textContent;
     lvl_1.replaceWith(z);
 
-    let first_mas = Array.from(document.querySelectorAll("#characteristics > tbody > tr"));
+    const first_mas = Array.from(document.querySelectorAll("#characteristics > tbody > tr"));
     //age time
-    let age_obj = first_mas.filter(td => td.firstElementChild.textContent.includes("Возраст"));
+    const age_obj = first_mas.filter(td => td.firstElementChild.textContent.includes("Возраст"));
     if (age_obj) {
-        let age_clear_text = age_obj[0].lastElementChild.firstChild.textContent;
-        let age_mas = age_clear_text.split(" ");
-        let age_hours = age_mas[age_mas.findIndex(i => i.includes("час")) - 1];
-        let age_days = age_mas[age_mas.findIndex(i => i.includes("дн") || i.includes("ден")) - 1];
-        let age_month = age_mas[age_mas.findIndex(i => i.includes("мес")) - 1];
-        let age_years = age_mas[age_mas.findIndex(i => i.includes("год") || i.includes("лет")) - 1];
+        const age_clear_text = age_obj[0].lastElementChild.firstChild.textContent;
+        const age_mas = age_clear_text.split(" ");
+        const age_hours = age_mas[age_mas.findIndex(i => i.includes("час")) - 1];
+        const age_days = age_mas[age_mas.findIndex(i => i.includes("дн") || i.includes("ден")) - 1];
+        const age_month = age_mas[age_mas.findIndex(i => i.includes("мес")) - 1];
+        const age_years = age_mas[age_mas.findIndex(i => i.includes("год") || i.includes("лет")) - 1];
 
         let d2 = moment();
-        let date1_structure = {};
+        const date1_structure = {};
         if (age_hours) date1_structure.hours = age_hours;
         if (age_days) date1_structure.days = age_days;
         if (age_month) date1_structure.month = age_month;
@@ -76,14 +76,14 @@ if (document.URL.slice(-5) != ".json") {
             d1.subtract(1, 'hour');
             birth_approx = "час";
         }
-        let birth_approx_text = `Дата-время регистрации [${d1.format("DD.MM.YYYY HH:mm")} - ${d2.format("DD.MM.YYYY HH:mm")}], погрешность 1 ` + birth_approx;
+        const birth_approx_text = `Дата-время регистрации [${d1.format("DD.MM.YYYY HH:mm")} - ${d2.format("DD.MM.YYYY HH:mm")}], погрешность 1 ` + birth_approx;
         age_obj[0].lastElementChild.title = birth_approx_text;
 
         //pure days - date of birth
-        let total_days_obj = document.querySelector("#characteristics div.d_date");
+        const total_days_obj = document.querySelector("#characteristics div.d_date");
         let d3, d4;
         if (total_days_obj) {
-            let total_days = Number(total_days_obj.textContent.match(/\d+/)[0]);
+            const total_days = Number(total_days_obj.textContent.match(/\d+/)[0]);
             d4 = moment().subtract({ days: total_days });
             d3 = d4.clone();
             d3.subtract(1, 'day');
@@ -91,11 +91,11 @@ if (document.URL.slice(-5) != ".json") {
             total_days_obj.title += `\nДнем рождения считается ${d4.format("DD.MM.YYYY")}`;
             birth_approx = "день";
         }
-        let birth_d1 = (total_days_obj) ? d3 : d1;
-        let birth_d2 = (total_days_obj) ? d4 : d2;
+        const birth_d1 = (total_days_obj) ? d3 : d1;
+        const birth_d2 = (total_days_obj) ? d4 : d2;
 
         function getBetterRussianHumanizedDurationText(dur) {
-            let m = [];
+            const m = [];
             if (dur.years() != 0) {
                 if (dur.years() == 1) m.push(dur.years() + " год");
                 else if (dur.years() == 2 || dur.years() == 3 || dur.years() == 4) m.push(dur.years() + " года");
@@ -120,25 +120,25 @@ if (document.URL.slice(-5) != ".json") {
         }
 
         function AddDurationObjs(first_date, hint, place_to, search, start_dates) {
-            let span_dt = Array.from(document.querySelectorAll(".t_award_dt")).filter(i => i.textContent.match(new RegExp(search, "gi")));
+            const span_dt = Array.from(document.querySelectorAll(".t_award_dt")).filter(i => i.textContent.match(new RegExp(search, "gi")));
 
-            let p = document.createElement("div");
+            const p = document.createElement("div");
             p.className = "duration_div";
 
-            let date_text = (span_dt.length == 1) ? span_dt[0].textContent.match(/\d+\.\d+\.\d+ \d+\:\d+/) : null;
-            let d_text = (span_dt.length == 0 || !date_text) ? "уже" : "за";
-            let d = (span_dt.length == 0 || !date_text) ? moment() : moment(date_text[0].trim(), 'DD.MM.YYYY HH:mm');
+            const date_text = (span_dt.length == 1) ? span_dt[0].textContent.match(/\d+\.\d+\.\d+ \d+\:\d+/) : null;
+            const d_text = (span_dt.length == 0 || !date_text) ? "уже" : "за";
+            const d = (span_dt.length == 0 || !date_text) ? moment() : moment(date_text[0].trim(), 'DD.MM.YYYY HH:mm');
 
-            let current_dates = (!start_dates) ? { d1: birth_d1, d2: birth_d2, approx: birth_approx, hint: "регистрации" } : start_dates;
+            const current_dates = (!start_dates) ? { d1: birth_d1, d2: birth_d2, approx: birth_approx, hint: "регистрации" } : start_dates;
 
-            if (!current_dates.d1) return { d1: null, hint: hint }; //escape future calculations
+            if (!current_dates.d1) return { d1: null, hint }; //escape future calculations
             if (current_dates.d1 > first_date) {
                 if (!start_dates) {
                     p.title = "Погрешность 1 " + birth_approx + " от возраста";
                 }
             }
 
-            let duration_max = moment.duration(d.diff(moment.max(first_date, current_dates.d1)));
+            const duration_max = moment.duration(d.diff(moment.max(first_date, current_dates.d1)));
             if (moment.max(first_date, current_dates.d1) < d) {
                 let bool_equal_durations = false;
                 let duration_min;
@@ -160,39 +160,39 @@ if (document.URL.slice(-5) != ".json") {
             p.title += `Отсчёт ведем с ${moment.max(first_date, current_dates.d1).format("DD.MM.YYYY HH:mm")} - `;
             p.title += (current_dates.d1 > first_date) ? "даты " + current_dates.hint : "момента начала " + hint + " у всех";
 
-            let tr_constructed = first_mas.filter(i => i.firstElementChild.textContent.match(new RegExp(place_to, "gi")));
+            const tr_constructed = first_mas.filter(i => i.firstElementChild.textContent.match(new RegExp(place_to, "gi")));
             if (tr_constructed.length == 1) {
-                let td_constructed = tr_constructed[0].firstElementChild;
+                const td_constructed = tr_constructed[0].firstElementChild;
                 td_constructed.appendChild(p);
             }
 
-            return { d1: (d_text == "уже") ? null : d, hint: hint };
+            return { d1: (d_text == "уже") ? null : d, hint };
         }
 
         //temple time
-        let temple_start = moment("15.03.2009 18:14", 'DD.MM.YYYY HH:mm');
-        let temple_dates = AddDurationObjs(temple_start, "постройки храма", 'храм', 'Храмовник');
+        const temple_start = moment("15.03.2009 18:14", 'DD.MM.YYYY HH:mm');
+        const temple_dates = AddDurationObjs(temple_start, "постройки храма", 'храм', 'Храмовник');
         //https://godville.net/gods/%D0%A1%D0%B5%D0%BB%D0%B5%D1%81%D1%82%D0%B8%D0%BD%D0%B0
 
         //ark time
-        let ark_start = moment("04.07.2013 14:27", 'DD.MM.YYYY HH:mm');
-        let ark_dates = AddDurationObjs(ark_start, "постройки ковчега", 'ковчег', 'Корабел', temple_dates);
+        const ark_start = moment("04.07.2013 14:27", 'DD.MM.YYYY HH:mm');
+        const ark_dates = AddDurationObjs(ark_start, "постройки ковчега", 'ковчег', 'Корабел', temple_dates);
 
-        let pairs_start = moment("02.10.2015 12:59", 'DD.MM.YYYY HH:mm');
-        let pairs_dates = AddDurationObjs(pairs_start, "сбора тварей", 'твари', 'Тваревед', ark_dates);
+        const pairs_start = moment("02.10.2015 12:59", 'DD.MM.YYYY HH:mm');
+        const pairs_dates = AddDurationObjs(pairs_start, "сбора тварей", 'твари', 'Тваревед', ark_dates);
         //рекорд https://godville.net/gods/%D0%A4p%D0%B0%D0%BD%D0%BA
 
-        let boss = first_mas.filter(i => i.firstElementChild.textContent.includes("Босс"));
+        const boss = first_mas.filter(i => i.firstElementChild.textContent.includes("Босс"));
         let book_dates;
         if (boss.length == 1) {
-            let book_start = moment("20.08.2019 16:16", 'DD.MM.YYYY HH:mm');
+            const book_start = moment("20.08.2019 16:16", 'DD.MM.YYYY HH:mm');
             book_dates = AddDurationObjs(book_start, "написания книги", 'книг', 'Книжник', pairs_dates);
         }
 
-        let trade_start = moment("18.07.2012 16:16", 'DD.MM.YYYY HH:mm');
+        const trade_start = moment("18.07.2012 16:16", 'DD.MM.YYYY HH:mm');
         AddDurationObjs(trade_start, "постройки лавки", 'сбережения|лавка', 'Лавочник', temple_dates);
 
-        let souls_start = moment("02.03.2022 15:16", 'DD.MM.YYYY HH:mm');
+        const souls_start = moment("02.03.2022 15:16", 'DD.MM.YYYY HH:mm');
         AddDurationObjs(souls_start, "собирания всех душ", 'душ', 'Душевник', book_dates);
 
         //

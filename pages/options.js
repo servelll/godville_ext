@@ -1,11 +1,11 @@
 if (chrome) browser = chrome;
 
 function Print(s) {
-	let _status = document.getElementById("status");
+	const _status = document.getElementById("status");
 	_status.textContent = s;
 	_status.style.display = "";
 	setTimeout(() => {
-		var opacity = 1,
+		let opacity = 1,
 			animate = setInterval(function () {
 				opacity -= 0.05;
 				_status.style.opacity = opacity;
@@ -18,7 +18,7 @@ function Print(s) {
 
 function SetDebugElementsStyle(debug) {
 	console.log("SetDebugElementsStyle", debug);
-	let str = debug ? "" : "none";
+	const str = debug ? "" : "none";
 	for (const e of document.getElementsByClassName("debug")) {
 		e.style.display = str;
 	}
@@ -60,6 +60,7 @@ function saveOptions(e) {
 }
 
 function LoadIfExist(e) {
+	if (e && e.type == "Event") e.preventDefault();
 	//Load if options Exist
 	browser.storage.local.get('options', function (object) {
 		if (!browser.runtime.error) {
@@ -68,10 +69,10 @@ function LoadIfExist(e) {
 				Print("Пустое хранилище, невозможно загрузить");
 			} else {
 				console.log("load => ", object);
-				for (let i in object.options) {
-					//splitted for 1). pluses: 'Random' 2). pluses: false 
-					let i_block = document.getElementById(i);
-					let value = object.options[i];
+				for (const i in object.options) {
+					//splitted for 1). pluses: 'Random' 2). pluses: false
+					const i_block = document.getElementById(i);
+					const value = object.options[i];
 					console.log(i, i_block);
 					if (!i_block) continue;
 					if (i_block.tagName == "INPUT") {
@@ -94,7 +95,6 @@ function LoadIfExist(e) {
 			}
 		}
 	});
-	if (e && e.type == "Event") e.preventDefault();
 }
 
 LoadIfExist();
@@ -107,7 +107,7 @@ for (let j of checkBoxes) {
 	//SetSelectStyle(j);
 }
 
-for (let form of document.querySelectorAll("form")) {
+for (const form of document.querySelectorAll("form")) {
 	//form.addEventListener("submit", event => saveOptions(event));
 }
 
@@ -118,7 +118,7 @@ document.getElementById("clearOptions").addEventListener("click", e => {
 	console.log("Clear");
 
 	browser.storage.local.clear(function () {
-		var error = browser.runtime.lastError;
+		const error = browser.runtime.lastError;
 		if (error) {
 			console.error(error);
 		}
@@ -176,8 +176,8 @@ for (const label of document.getElementsByClassName("correct_link")) {
 }
 
 for (const button of document.getElementsByClassName("clear")) {
-	let line = button.parentNode.parentNode;
-	let key = line.id;
+	const line = button.parentNode.parentNode;
+	const key = line.id;
 	button.addEventListener("click", e => {
 		SetToStorage(key + "_lastDate", new Date().toLocaleString());
 		SetToStorage(key, []);
@@ -240,9 +240,9 @@ for (let button of document.getElementsByClassName("append")) {
 		e.preventDefault();
 	});
 }
-for (let button of document.getElementsByClassName("delete")) {
-	let line = button.parentNode.parentNode;
-	let key = line.id;
+for (const button of document.getElementsByClassName("delete")) {
+	const line = button.parentNode.parentNode;
+	const key = line.id;
 	button.addEventListener('click', async (e) => {
 		await RemoveFromArrayInStorage(key, "y1dxtz2");
 		UpdateFieldLabel(button);

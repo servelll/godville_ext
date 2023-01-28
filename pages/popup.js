@@ -1,6 +1,6 @@
 // Add event handler
 document.getElementById("b").addEventListener("click", function () {
-    var data = {
+    const data = {
         title: "zzzzz",
         url: window.location.href,
     }

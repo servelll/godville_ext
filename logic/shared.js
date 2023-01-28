@@ -48,7 +48,7 @@ Array.prototype.equals = function (array) {
 }
 
 function loadScript(url) {
-    var request = new XMLHttpRequest();
+    const request = new XMLHttpRequest();
     request.onreadystatechange = function () {
         if (request.readyState !== 4) {
             return;
@@ -99,7 +99,7 @@ class Polygon {
     fillPushesAtThisSubstep(index, subindex, submove_owner_letter) {
         pushes_percents_table[index][submove_owner_letter] = {};
 
-        let prevsub = GetPrevSubIndexs(index, subindex);
+        const prevsub = GetPrevSubIndexs(index, subindex);
         if (!submove_owner_letter) {
             submove_owner_letter = alive_boss_letters[subindex];
 
@@ -112,9 +112,9 @@ class Polygon {
 }
 
 async function MakingUniqueArrayInStorage(key, another_array) {
-    let obj = await chrome.storage.local.get(key);
+    const obj = await chrome.storage.local.get(key);
     if (!obj) return {};
-    let dict = obj[key];
+    const dict = obj[key];
     let unique_array = Array.from(new Set(dict));
     if (key == 'MyGV_NotLoadedLogs' && another_array) {
         unique_array = unique_array.filter(m_id => !another_array.includes(m_id));
@@ -125,14 +125,16 @@ async function MakingUniqueArrayInStorage(key, another_array) {
     return unique_array;
 }
 
-async function SetToStorage(key, propertyObj) {
-    let a = {};
-    a[key] = propertyObj;
+async function SetToStorage(key, value) {
+    console.log("SetToStorage", key, value);
+    const a = {};
+    a[key] = value;
     await chrome.storage.local.set(a);
 }
 
 async function AppendToArrayInStorage(key, value) {
-    let obj = (await chrome.storage.local.get(key)) ?? {};
+    console.log("AppendToArrayInStorage", key, value);
+    const obj = (await chrome.storage.local.get(key)) ?? {};
     if (!obj[key]) {
         obj[key] = [];
         obj[key].push(value);
@@ -226,7 +228,7 @@ function CorsGetPageFromUrl(url) {
                             //console.log(data);
                             const parser = new DOMParser();
                             const html = parser.parseFromString(c.value.includes("https://api.allorigins.win/") ? data.contents : data, "text/html");
-                            let cors = html.createElement('s');
+                            const cors = html.createElement('s');
                             cors.setAttribute('href', c.value);
                             html.head.append(cors);
                             resolve(html);
@@ -271,7 +273,7 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
     }
 
     console.log("AddErinomeLogsCheckingActions start");
-    let dom_arr = () => wup ?
+    const dom_arr = () => wup ?
         Array.from(wup.querySelectorAll(".wup-content > div > div > .wl_line > .wl_ftype > a") ?? []) : //popup
         Array.from(after_node.parentNode.querySelectorAll("tr > td:nth-child(2) > a") ?? []);  //last_fight
     let dom_saved, dom_unsaved, saved_array, unsaved_array;
@@ -294,7 +296,7 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
     z_minus.title = "Не загруженных логов";
     LogsCheck_container.appendChild(z_minus);
 
-    let z_unknown = document.createElement("z");
+    const z_unknown = document.createElement("z");
     z_unknown.style.color = "#199BDC";
     z_unknown.style.cursor = "pointer";
     z_unknown.title = "Не проверенных логов\nНажмите, чтобы очистить от существующих в 'MyGV_LoadedLogs' элементов массива 'MyGV_NotLoadedLogs',\nот дублей 'MyGV_NotLoadedLogs'/'MyGV_LoadedLogs'";
@@ -308,14 +310,14 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
 
     LogsCheck_container.appendChild(document.createTextNode("/"));
 
-    let z_total = document.createElement("z");
+    const z_total = document.createElement("z");
     z_total.title = "Всего логов";
     LogsCheck_container.appendChild(z_total);
 
     function UpdateText() {
         z_plus.textContent = dom_saved.length + "[+]";
         z_minus.textContent = dom_unsaved.length + "[-]";
-        let dom_arr_buffer = dom_arr();
+        const dom_arr_buffer = dom_arr();
         z_total.textContent = dom_arr_buffer.length;
         z_unknown.textContent = dom_arr_buffer.length - dom_saved.length - dom_unsaved.length + "[?]";
     }
@@ -337,8 +339,8 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
         } else {
             async function ActionsWithStoragedAbstract(propertyText) {
                 //this taking some time ~300ms
-                let checked_obj = (await chrome.storage.local.get(propertyText)) ?? {};
-                let array = Array.from(checked_obj[propertyText] ?? []);
+                const checked_obj = (await chrome.storage.local.get(propertyText)) ?? {};
+                const array = Array.from(checked_obj[propertyText] ?? []);
                 return array;
             }
             //get Arrays 
@@ -350,9 +352,9 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
             for (const x of dom_arr()) {
                 let gv_shortpath = x.href.replace("https://godville.net", "");
                 let x_id = gv_shortpath.replace("/duels/log/", "");
-                let bool = saved_array.includes(x_id);
+                const bool = saved_array.includes(x_id);
                 if (bool || unsaved_array.includes(x_id)) {
-                    let date_td = x.parentNode.parentNode.firstElementChild;
+                    const date_td = x.parentNode.parentNode.firstElementChild;
                     MarkRow(date_td, bool, "https://gv.erinome.net/duels/log/" + x_id);
                     if (bool) dom_saved.push(x_id); else dom_unsaved.push(x_id);
                 }
@@ -382,7 +384,7 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
                 let gv_shortpath = x.href.replace("https://godville.net", "");
                 let id = gv_shortpath.replace("/duels/log/", "");
                 let link = "https://gv.erinome.net" + gv_shortpath;
-                let b = await UrlExistsAsync(link);
+                const b = await UrlExistsAsync(link);
                 AppendToArrayInStorage(b ? "MyGV_LoadedLogs" : "MyGV_NotLoadedLogs", id);
                 if (b) {
                     RemoveFromArrayInStorage("MyGV_NotLoadedLogs", id);
@@ -400,7 +402,7 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
         }
     }
 
-    let z1 = document.createElement("z");
+    const z1 = document.createElement("z");
     z1.setAttribute("style", z_unknown.getAttribute("style"));
     z1.textContent = "[>]";
     z1.setTitle = function () {
@@ -411,12 +413,12 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
     z1.setTitle();
     //skip ALL already executed
     z1.onclick = () => CheckLogsActions(z1, dom_arr().filter(x => {
-        let tr = x.parentNode.parentNode;
+        const tr = x.parentNode.parentNode;
         return !tr.firstElementChild.textContent.includes('['); //исключаем [+] и [-]
     }));
     LogsCheck_container.appendChild(z1);
 
-    let z2 = document.createElement("z");
+    const z2 = document.createElement("z");
     z2.textContent = "[>>]";
     z2.setAttribute("style", z_unknown.getAttribute("style"));
     z2.setTitle = function () {
@@ -426,7 +428,7 @@ async function AddErinomeLogsCheckingActions(wup, after_node) {
     }
     z2.setTitle();
     z2.onclick = () => CheckLogsActions(z2, dom_arr().filter(x => {
-        let tr = x.parentNode.parentNode;
+        const tr = x.parentNode.parentNode;
         return !tr.firstElementChild.textContent.includes('[+]'); //исключаем только [+]
     }));
     LogsCheck_container.appendChild(z2);

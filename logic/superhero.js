@@ -1,15 +1,14 @@
 function AddAbstactPopupObserver(name, title_text, inside_observer_callback) {
-	let target = document.querySelector('body');
+	const target = document.querySelector('body');
 	const config = {
 		childList: true
 	};
-	let callback = function (mutationsList, observer) {
-		let wups = document.querySelectorAll(".wup");
+	const callback = function (mutationsList, observer) {
+		const wups = document.querySelectorAll(".wup");
 		for (const wup of wups) {
-			let wup_title = wup.querySelector(".wup-title");
+			const wup_title = wup.querySelector(".wup-title");
 			if (wup_title && wup_title.textContent.includes(title_text)) {
 				console.log(name + "PopupObserver callback inside");
-				let wup_title = wup.querySelector(".wup-title");
 				wup_title.style.display = "flex";
 				wup_title.style.justifyContent = "space-around";
 				wup.querySelector(".wup-content").removeAttribute("style");
@@ -19,7 +18,7 @@ function AddAbstactPopupObserver(name, title_text, inside_observer_callback) {
 		}
 	}
 
-	let observer = new MutationObserver(callback);
+	const observer = new MutationObserver(callback);
 	observer.observe(target, config);
 
 	console.log("Add" + name + "PopupObserver done");
@@ -33,11 +32,11 @@ function AddLogsHistoryPopupObserver() {
 		wup_title.innerHTML = "<a href=https://godville.net/hero/last_fight>История сражений</a>";
 
 		//wait until wup will load
-		let observer_callback = function (mutationsList, observer) {
+		const observer_callback = function (mutationsList, observer) {
 			observer.disconnect();
 			AddErinomeLogsCheckingActions(wup, document.querySelector("#lf_popover_c > div:nth-child(2)"));
 		};
-		let observer = new MutationObserver(observer_callback);
+		const observer = new MutationObserver(observer_callback);
 		observer.observe(wup.querySelector("#lf_popover_c"), { childList: true });
 	});
 }
@@ -51,7 +50,7 @@ function AddLaboratoryPopupObserver() {
 			a.id = "MyGV_CalcLink";
 			a.title = "Полный рассчет на http://godb.gandjubas.de/";
 			a.onclick = () => {
-				let txt = Array.from(wup.querySelectorAll(".wup-content > div .bps_line")).reduce((acc, curr) => {
+				const txt = Array.from(wup.querySelectorAll(".wup-content > div .bps_line")).reduce((acc, curr) => {
 					return acc + curr.querySelector(".bps_capt").textContent + "+" + curr.querySelector(".bps_val").textContent.replaceAll(" ", "+") + "%0D%0A";
 				}, "");
 				window.open("http://godb.gandjubas.de/golem/index.php?txt=" + txt, '_blank');
@@ -69,13 +68,13 @@ function AddLaboratoryPopupObserver() {
 }
 
 function AddGodVoicesPopupObserver() {
-	let target = document.querySelector('body');
-	let config = {
+	const target = document.querySelector('body');
+	const config = {
 		childList: true
 	};
-	let callback = function (mutationsList, observer) {
-		let title_chronique = document.querySelector("#m_fight_log > div.block_h > h2");
-		let diary = document.querySelector("#diary > div.block_h > h2");
+	const callback = function (mutationsList, observer) {
+		const title_chronique = document.querySelector("#m_fight_log > div.block_h > h2");
+		const diary = document.querySelector("#diary > div.block_h > h2");
 		const researches_roots = ["изобр", "крафт", "склей", "собир", "собери", "слепи", "соедини", "сделай"];
 		const directions_roots = ["север", "юг", "запад", "восток", "вниз", "спуск", "вверх", "наверх", "лестниц", "подним"];
 		const global_par_table = [
@@ -85,7 +84,7 @@ function AddGodVoicesPopupObserver() {
 		];
 
 		function UpdateObjText(par_entity) {
-			let obj = document.getElementById(par_entity.id);
+			const obj = document.getElementById(par_entity.id);
 			//console.log("UpdateObjText", par_entity, obj);
 			if (obj) {
 				obj.className = (Object.keys(par_entity.dict).length == 0) ? "" : "div_link_nu";
@@ -97,7 +96,7 @@ function AddGodVoicesPopupObserver() {
 			for (const entity of global_par_table) {
 				entity.dict = {};
 			}
-			for (let i of document.querySelectorAll("#gv_popover_c .wl_line:not([style*='display: none'])")) {
+			for (const i of document.querySelectorAll("#gv_popover_c .wl_line:not([style*='display: none'])")) {
 				const t = i.querySelector(".lv_text > a").textContent;
 				if (researches_roots.some(root => t.match(new RegExp(root, "gi")))) {
 					global_par_table[0].dict[t] = i.querySelector('.wl_stats');
@@ -110,7 +109,7 @@ function AddGodVoicesPopupObserver() {
 		}
 		reFillDictionariesAndUpdateNumbers();
 
-		let godvoices_panel = document.getElementById("gv_popover_c");
+		const godvoices_panel = document.getElementById("gv_popover_c");
 		if (godvoices_panel) {
 			const a = godvoices_panel.parentNode.parentNode;
 			function Create_DeleteDiv(_entity) {
@@ -137,14 +136,14 @@ function AddGodVoicesPopupObserver() {
 				return obj;
 			}
 
-			let el = document.getElementById("MyGV_craft_del");
+			const el = document.getElementById("MyGV_craft_del");
 			if (!title_chronique && diary) {
 				Create_DeleteDiv(global_par_table[0]);
 			} else {
 				if (el) el.style.display = "none";
 			}
 
-			let el1 = document.getElementById("MyGV_directions_del");
+			const el1 = document.getElementById("MyGV_directions_del");
 			if (title_chronique && title_chronique.textContent.includes("подземелья")) {
 				Create_DeleteDiv(global_par_table[1]);
 			} else {
@@ -163,14 +162,14 @@ function AddGodVoicesPopupObserver() {
 			}
 		}
 	};
-	let observer = new MutationObserver(callback);
+	const observer = new MutationObserver(callback);
 	observer.observe(target, config);
 
 	console.log("AddGodVoicesPopupObserver done");
 }
 
 function AddChroniqueStepObserver() {
-	let title_chronique = document.querySelector("#m_fight_log > div.block_h > h2");
+	const title_chronique = document.querySelector("#m_fight_log > div.block_h > h2");
 	let div = document.getElementById("MyGV_ToNextHint");
 	if (!div) {
 		div = document.createElement("div");
@@ -179,25 +178,28 @@ function AddChroniqueStepObserver() {
 		title_chronique.nextSibling.prepend(div);
 	}
 
-	let config = {
+	const config = {
 		childList: true,
 		characterData: true
 	};
-	let callback = function (mutationsList, observer) {
+	const callback = function (mutationsList, observer) {
 		//TODO исключить моря
 		//console.log("ChroniqueStep callback");
-		var re = /\d+/g;
-		let move_number = re.exec(title_chronique.textContent)[0];
-		div.textContent = move_number;
+		const re = /\d+/g;
+		const match = re.exec(title_chronique.textContent);
+		if (match) {
+			const move_number = match[0];
+			div.textContent = move_number;
+		}
 		//TODO
 
-		if (title_chronique.firstChild.textContent.includes("подземелья")) {
+		if (title_chronique.firstChild.textContent.includes("подземелья")) { ///TODO && is_need_check_later
 			AddOrUpdateAquariumLinks();
 			//TODO молилка, исключить 100+ праны, подзем Мольбы, праноконденсатор, учитывая распаковку (по астропрогнозу)
 
 			//TODO урон ловушки, исключить влияния\чудеса не в Бессилии
 
-			let exitObj = document.querySelector("[title='Выход из подземелья']");
+			const exitObj = document.querySelector("[title='Выход из подземелья']");
 			//TODO цвет выхода
 			//if (Number(move_number) <= 20) exitObj.style.backgroundColor = "#ff4422";
 		}
@@ -209,7 +211,7 @@ function AddChroniqueStepObserver() {
 	};
 	callback();
 
-	let observer = new MutationObserver(callback);
+	const observer = new MutationObserver(callback);
 	observer.observe(title_chronique, config);
 
 	console.log("AddChroniqueStepObserver done");
@@ -227,12 +229,11 @@ function AddPolygonStepObserver() {
 		polygon_chronuque.nextSibling.appendChild(div);
 	}
 
-	let config = {
+	const config = {
 		childList: true,
 		characterData: true
 	};
-	let callback = function (mutationsList, observer) {
-		//console.log(document);
+	const callback = function (mutationsList, observer) {
 		console.log("AddPolygonStepObserver callback");
 		//let substep_in_perc = document.querySelector("#turn_pbar .p_val");
 		let re = /\d+/g;
@@ -245,16 +246,16 @@ function AddPolygonStepObserver() {
 		//observer.disconnect();
 	};
 
-	let observer = new MutationObserver(callback);
+	const observer = new MutationObserver(callback);
 	observer.observe(polygon_chronuque.firstChild, config);
 	callback();
 
 	//add boss letters as titles
-	let title_letters = "BCDABC";
-	let z = document.querySelectorAll(".opp_n:not(.opp_ng)");
-	let ind = Array.from(z).findIndex(x => x.firstElementChild.textContent.includes("@"));
+	const title_letters = "BCDABC";
+	const z = document.querySelectorAll(".opp_n:not(.opp_ng)");
+	const ind = Array.from(z).findIndex(x => x.firstElementChild.textContent.includes("@"));
 
-	let Objmas = document.getElementsByClassName("st_div");
+	const Objmas = document.getElementsByClassName("st_div");
 	for (let index = 0; index < 3; index++) {
 		Objmas[index].textContent = title_letters[index + ind];
 	}
@@ -264,27 +265,27 @@ function AddPolygonStepObserver() {
 
 function GetJSCoords(obj) {
 	console.log(obj, obj.parentNode);
-	let Col = Array.from(obj.parentNode.childNodes).indexOf(obj);
-	let Row = Array.from(obj.parentNode.parentNode.childNodes).indexOf(obj.parentNode);
+	const Col = Array.from(obj.parentNode.childNodes).indexOf(obj);
+	const Row = Array.from(obj.parentNode.parentNode.childNodes).indexOf(obj.parentNode);
 	return [Col, Row];
 }
 //TODO add ONLY FIRST level
 //TODO check buffered level
 function AddOrUpdateAquariumLinks() {
-	let m = document.querySelector("#map > div.block_content > div");
-	let map = m.childNodes[1];
+	const m = document.querySelector("#map > div.block_content > div");
+	const map = m.childNodes[1];
 
-	let exitObj = document.querySelector("[title*='Выход из подземелья']") || document.querySelector("[title*='Команда героев']");
+	const exitObj = document.querySelector("[title*='Выход из подземелья']") || document.querySelector("[title*='Команда героев']");
 	if (!exitObj || document.querySelector("[title*='Тайная комната'") || m.childNodes[0].textContent.includes("2Э")) {
 		console.log("AddOrUpdateAquariumLinks return");
 		return;
 	}
-	let exitCoord = GetJSCoords(exitObj);
-	let exitRowsNear = [-1, 0, 1].map(i => Array.from(map.childNodes)[exitCoord[1] + i]);
-	let exitCellsNear_H = exitRowsNear.map(r => [-1, 0, 1].map(j => Array.from(r.childNodes)[exitCoord[0] + j]));
+	const exitCoord = GetJSCoords(exitObj);
+	const exitRowsNear = [-1, 0, 1].map(i => Array.from(map.childNodes)[exitCoord[1] + i]);
+	const exitCellsNear_H = exitRowsNear.map(r => [-1, 0, 1].map(j => Array.from(r.childNodes)[exitCoord[0] + j]));
 
-	let north_south_NearExit = [0, 2].filter(i => exitCellsNear_H[i].every(cell => cell.className.includes("dmw")));
-	let west_east_NearExit = [0, 2].filter(i => exitCellsNear_H.every(r => r[i].className.includes("dmw")));
+	const north_south_NearExit = [0, 2].filter(i => exitCellsNear_H[i].every(cell => cell.className.includes("dmw")));
+	const west_east_NearExit = [0, 2].filter(i => exitCellsNear_H.every(r => r[i].className.includes("dmw")));
 	//console.log(north_south_NearExit, west_east_NearExit);
 	if (north_south_NearExit.length > 0 || west_east_NearExit.length > 0) {
 		console.log("AddOrUpdateAquariumLinks return exitNotNearWall");
@@ -300,11 +301,11 @@ function AddOrUpdateAquariumLinks() {
 		m.appendChild(a);
 	}
 
-	let borders_mas = [
+	const borders_mas = [
 		Array.from(map.firstElementChild.childNodes),
 		Array.from(map.lastElementChild.childNodes),
-		Array.from(map.childNodes).map(e => e.firstElementChild),
-		Array.from(map.childNodes).map(e => e.lastElementChild)
+		Array.from(map.childNodes, e => e.firstElementChild),
+		Array.from(map.childNodes, e => e.lastElementChild)
 	];
 	console.log("borders_mas", borders_mas);
 
@@ -322,26 +323,26 @@ function AddOrUpdateAquariumLinks() {
 		}
 	}
 
-	let chosenPoints = [borders_mas[0], borders_mas[1]].reduce((acc, e) => {
+	const chosenPoints = [borders_mas[0], borders_mas[1]].reduce((acc, e) => {
 
 		//acc.push([e[0], e[]]);
 	}, []);
 
 	console.log("chosenPoints", chosenPoints);
 	//TODO переписать!
-	let points_mas = chosenPoints.map(e => {
+	const points_mas = chosenPoints.map(e => {
 		console.log(e);
-		let coords = GetJSCoords(e);
-		let type = 0;
+		const coords = GetJSCoords(e);
+		const type = 0;
 		if (e.className.includes("dmw")) return null;
 		return `${coords[1] - exitCoord[1] + 17},${coords[0] - exitCoord[0] + 17}-` + type;
 	}).filter(a => a);
 
-	let link = "!https://digdog.web.app/?points=" + points_mas.join(";");
+	const link = "!https://digdog.web.app/?points=" + points_mas.join(";");
 	a.href = link;
 	a.onclick = (e) => {
-		window.open(link, '_blank');
 		e.preventDefault();
+		window.open(link, '_blank');
 	}
 
 	console.log("AddOrUpdateAquariumLinks done");
@@ -351,35 +352,15 @@ function DecideDungeonType() {
 
 }
 
-//test
-/*
-function TestObserver(id) {
-	let target = document.querySelector("#diary > div.block_h > h2");
-	const config = {
-		childList: true,	
-		characterData: true
-	};
-	const callback = function (mutationsList, observer) {
-		console.log("callback " + id, observer);
-	};
-	
-	const observer = new MutationObserver(callback);
-	observer.observe(target.firstChild, config);
-	console.log(`TestObserver ${id}done`);
-}
-TestObserver(1);
-TestObserver(2);
-*/
-
 function getMaxHp(godName) {
 	return new Promise((resolve, reject) => {
 		//throw API
-		let url = `https://godville.net/gods/api/${godName}.json`;
-		var xhr = new XMLHttpRequest();
+		const url = `https://godville.net/gods/api/${godName}.json`;
+		const xhr = new XMLHttpRequest();
 		xhr.open('GET', url, true);
 		xhr.responseType = 'json';
 		xhr.onload = function () {
-			var status = xhr.status;
+			const status = xhr.status;
 			if (status === 200) {
 				resolve(xhr.response.max_health);
 			} else {
@@ -390,24 +371,24 @@ function getMaxHp(godName) {
 	});
 }
 
-let last_dungeon = {};
+const last_dungeon = {};
 let mutatable_boss_abilities_history = "";
 
 //TODO для логов
 function AddHolemSearch() {
-	let boss_name = document.querySelector("#o_hk_name > .l_val").textContent;
+	const boss_name = document.querySelector("#o_hk_name > .l_val").textContent;
 	//TODO проверить на зовущем
-	let boss_abilities = document.querySelector('#o_info > .block_content > .line:not([id]) > .l_val').textContent;
+	const boss_abilities = document.querySelector('#o_info > .block_content > .line:not([id]) > .l_val').textContent;
 	if (boss_abilities.split(", ").length == 3) {
 		//ссылка на поиск голема для трехабила
-		let boss_hp = /\d+$/g.exec(document.querySelector("#o_hl1 > .l_val").textContent)[0];
-		let hero_hp = /\d+$/g.exec(document.querySelector("#hk_health > .l_val").textContent)[0];
+		const boss_hp = /\d+$/g.exec(document.querySelector("#o_hl1 > .l_val").textContent)[0];
+		const hero_hp = /\d+$/g.exec(document.querySelector("#hk_health > .l_val").textContent)[0];
 
-		let params = new URLSearchParams({ "str": boss_name, "b": boss_hp, "h1": hero_hp });
+		const params = new URLSearchParams({ "str": boss_name, "b": boss_hp, "h1": hero_hp });
 		let i = 2;
 		Array.from(document.querySelectorAll("#alls > .block_content .line.oppl")).forEach(z => {
-			let text = z.querySelector(".opp_h > span").textContent;
-			let allies_hp = text == "повержен" ? getMaxHp(z.querySelector(".opp_ng > span").textContent.slice(1, -1)).then() : /\d+$/g.exec(text)[0];
+			const text = z.querySelector(".opp_h > span").textContent;
+			const allies_hp = text == "повержен" ? getMaxHp(z.querySelector(".opp_ng > span").textContent.slice(1, -1)).then() : /\d+$/g.exec(text)[0];
 			params.append(`h${i++}`, allies_hp);
 		});
 		if (boss_abilities.includes("мутирующий")) {
@@ -424,12 +405,12 @@ function AddHolemSearch() {
 		}
 
 		//TODO Бесшумность pwf=on с проверкой из кэша
-		let link = "http://godb.gandjubas.de/golems/golems.php?" + params.toString();
+		const link = "http://godb.gandjubas.de/golems/golems.php?" + params.toString();
 
-		let a = document.createElement("a");
+		const a = document.createElement("a");
 		a.textContent = "Ссылка на поиск голема";
 		a.href = link;
-		let where = document.querySelector("#o_info > .block_content");
+		const where = document.querySelector("#o_info > .block_content");
 		where.insertBefore(a, where.lastElementChild);
 
 	}
@@ -439,17 +420,17 @@ function AddHolemSearch() {
 
 //TODO ????
 function DecideToAddAuraStringObserver() {
-	let second_target = Array.from(document.querySelectorAll("#stats > div.block_content > .line:not([id])")).find(a => a.firstElementChild.textContent == "Аура");
+	const second_target = Array.from(document.querySelectorAll("#stats > div.block_content > .line:not([id])")).find(a => a.firstElementChild.textContent == "Аура");
 	if (second_target) AddAuraSecondsObserver(second_target.lastElementChild);
 	else {
-		let target = document.querySelector("#stats > div.block_content");
-		let config = {
+		const target = document.querySelector("#stats > div.block_content");
+		const config = {
 			childList: true
 		};
-		let callback = function (mutationsList, observer) {
+		const callback = function (mutationsList, observer) {
 			//mutationsList
 		};
-		//let observer = new MutationObserver(callback);
+		//const observer = new MutationObserver(callback);
 		//observer.observe(target, config);
 	}
 	console.log("DecideToAddAuraStringObserver done");
@@ -457,11 +438,11 @@ function DecideToAddAuraStringObserver() {
 
 //TODO test
 function AddAuraSecondsObserver(target) {
-	let config = {
+	const config = {
 		subtree: true,
 		characterData: true
 	};
-	let callback = function (mutationsList, observer) {
+	const callback = function (mutationsList, observer) {
 		console.log(new Date().getSeconds(), observer.target.lastChild.textContent);
 
 		let i = 60;
@@ -475,7 +456,7 @@ function AddAuraSecondsObserver(target) {
 		}, 1000);
 	};
 
-	let observer = new MutationObserver(callback);
+	const observer = new MutationObserver(callback);
 	observer.observe(target, config);
 
 	console.log("AddAuraSecondsObserver done");
@@ -515,16 +496,16 @@ function AddMyGVCountsBlock() {
 
 //TODO параметр + 1
 function AddInventoryListener() {
-	let target = document.querySelector("#inv_block_content > ul");
-	let config = {
+	const target = document.querySelector("#inv_block_content > ul");
+	const config = {
 		childList: true
 	};
-	let callback = function (mutationsList, observer) {
+	const callback = function (mutationsList, observer) {
 		//замена ареналина
-		let index = Array.from(target.childNodes).findIndex(a => a.textContent.includes("ареналин"));
+		const index = Array.from(target.childNodes).findIndex(a => a.textContent.includes("ареналин"));
 		if (index > 0) {
 			console.log("ареналин");
-			let time = new Date();
+			const time = new Date();
 			if (time.getUTCMinutes() < 3) {
 				console.log("Клик на", target.childNodes[index]);
 				//target.childNodes[index].onclick();
@@ -533,7 +514,7 @@ function AddInventoryListener() {
 
 		//TODO прокликивания бесплатных активашек
 	};
-	let observer = new MutationObserver(callback);
+	const observer = new MutationObserver(callback);
 	observer.observe(target, config);
 
 	callback();
@@ -541,38 +522,38 @@ function AddInventoryListener() {
 }
 
 function AddFieldNewsListener() {
-	let target = document.querySelector("#news > div.block_content");
-	let config = {
+	const target = document.querySelector("#news > div.block_content");
+	const config = {
 		attributes: true,
 		childList: true,
 		subtree: true
 	};
-	let callback = function (mutationsList, observer) {
+	const callback = function (mutationsList, observer) {
 		console.log("AddFieldNewsListener callback", observer);
 		/*
-		let IsMonsterHided = document.querySelector("#news_pb > div.line.npb").style.display == "none";
+		const IsMonsterHided = document.querySelector("#news_pb > div.line.npb").style.display == "none";
 		if (IsMonsterHided) {
-			let bar = document.querySelector("#news_pb > div.p_bar.n_pbar > div");
+			const bar = document.querySelector("#news_pb > div.p_bar.n_pbar > div");
 			bar.
 		}
 		*/
 	};
 
-	let observer = new MutationObserver(callback);
+	const observer = new MutationObserver(callback);
 	observer.observe(target, config);
 	callback();
 	console.log("AddFieldNewsListener done");
 }
 
 function AddFieldTaskObserver() {
-	let task = document.querySelector("#hk_quests_completed .p_bar div");
-	let config = {
+	const task = document.querySelector("#hk_quests_completed .p_bar div");
+	const config = {
 		attributes: true
 	};
-	let callback = function (mutationsList, observer) {
-		let taskWithPerc = task.style.getPropertyValue('width') ?? "0%";
-		let taskValue = Number(taskWithPerc.slice(0, -1));
-		let obj = document.querySelector("#news_pb .p_bar.n_pbar .p_val");
+	const callback = function (mutationsList, observer) {
+		const taskWithPerc = task.style.getPropertyValue('width') ?? "0%";
+		const taskValue = Number(taskWithPerc.slice(0, -1));
+		const obj = document.querySelector("#news_pb .p_bar.n_pbar .p_val");
 		if (obj) {
 			if (taskWithPerc == "0%") {
 				obj.style.setProperty('--Width', "1%");
@@ -589,7 +570,7 @@ function AddFieldTaskObserver() {
 
 		//console.log("FieldTaskObserver callback", taskValue);
 	};
-	let observer = new MutationObserver(callback);
+	const observer = new MutationObserver(callback);
 	observer.observe(task, config);
 
 	callback();
@@ -597,26 +578,26 @@ function AddFieldTaskObserver() {
 }
 
 function AddFieldHeaderObserver() {
-	let target = document.querySelector("#news > div.block_h > h2");
-	let config = {
+	const target = document.querySelector("#news > div.block_h > h2");
+	const config = {
 		childList: true
 	};
-	let callback = function (mutationsList, observer) {
-		let val = target.textContent.includes("из города") ? "hidden" : "visible";
+	const callback = function (mutationsList, observer) {
+		const val = target.textContent.includes("из города") ? "hidden" : "visible";
 		/*
 		if (mutationsList) {
-			for (let mutation of mutationsList) {
+			for (const mutation of mutationsList) {
 				console.log(mutation);
 			}
 		}
 		*/
-		let obj = document.querySelector("#news_pb .p_bar.n_pbar .p_val");
+		const obj = document.querySelector("#news_pb .p_bar.n_pbar .p_val");
 		if (obj) {
 			obj.style.setProperty('--Visibility', val);
 		}
 		console.log("FieldHeaderObserver callback", target, val, document.querySelector("#news > div.block_h > h2"));
 	};
-	let observer = new MutationObserver(callback);
+	const observer = new MutationObserver(callback);
 	observer.observe(target, config);
 
 	callback();
@@ -626,67 +607,24 @@ function AddFieldHeaderObserver() {
 
 ///TODO parameter
 function AddMonsterInvitingListener() {
-	let target = document.querySelector('#news > div.block_content > [aria-live="polite"]> .line');
-	let config = {
+	const target = document.querySelector('#news > div.block_content > [aria-live="polite"]> .line');
+	const config = {
 		attributes: true
 	};
-	let callback = function (mutationsList, observer) {
+	const callback = function (mutationsList, observer) {
 		console.log("MonsterListener callback", observer);
 		//TODO Восставший \\не с кровати
-		let Monster = document.querySelector("#news div.l_val > span").textContent;
+		const Monster = document.querySelector("#news div.l_val > span").textContent;
 		if (Monster == "") {
 			//document.getElementById("monster_invite_submit").onclick();
 		}
 	};
 
-	let observer = new MutationObserver(callback);
+	const observer = new MutationObserver(callback);
 	observer.observe(target, config);
 	callback();
 	console.log("AddMonsterListener done");
 }
-
-//test debug observer created to detect general target for future observers 
-/*
-const testobserver_config = {
-	attributes: true,
-	childList: true,
-	subtree: true
-};
-const callback = function (mutationsList, observer) {
-	for (let mutation of mutationsList) {
-		if (mutation.type === 'childList') {
-			let test = getCSSPath(mutation.target);
-			console.log(test + "\n", 'childList:',
-				Array.from(mutation.addedNodes).map(i => getLocalSelectorOfNode(i)),
-				Array.from(mutation.removedNodes).map(i => getLocalSelectorOfNode(i)));
-		} else if (mutation.type === 'attributes') {
-			console.log(mutation.attributeName, '- attribute:', getCSSPath(mutation.target));
-		} else if (mutation.type === 'characterData') {
-			console.log('characterData:', mutation.target);
-		}
-	}
-};
-const observer = new MutationObserver(callback);
-observer.observe(document.body, testobserver_config);
-*/
-
-//code for ctrl-c ctrl-v in logs page to detect differences (use firefox with ctrl to select vertically)
-/*
-let ids = [
-	"hero_block",
-	"p_status", "load_err", "hint_bar", "hero_columns",
-	"left_block", "central_block", "right_block",
-	"stats", "pet", "trader", "pantheons", "invites", "ideabox", "control", "news", "diary", "hmap", "inventory", "equipment", "skills",
-	"left_left_block", "right_right_block",
-	"arena_columns",
-	"a_left_left_block", "a_right_right_block",
-	"alls", "m_info", "m_control", "m_inventory", "opps", "s_map", "m_fight_log", "map", "o_info", "o_inventory", "bosses", "b_info", "r_map", ".fightblink", "page_settings_link",
-	"a_left_block", "a_central_block", "a_right_block",
-	"page_settings",
-];
-let table = ids.map(i => ({ id: i, style: document.querySelector((i[0] != ".") ? "#" + i : i)?.getAttribute("style") }));
-console.table(table);
-*/
 
 //1) diary -> (any) duel mode (by getElementById("hero_columns"))
 //2) dungeon -> boss_fight
@@ -701,7 +639,7 @@ function waitForContents(callback, level = 0, observer_target_id, observer_confi
 			callback();
 		}
 	}
-	let observer = new MutationObserver(ObserverCallback);
+	const observer = new MutationObserver(ObserverCallback);
 	ObserverCallback(undefined, observer);
 	observer.observe(document.getElementById(observer_target_id), observer_config);
 	console.log("waitForContents end, level", level);
@@ -725,7 +663,7 @@ function UpdateMiniQuestsDB() {
 
 function AddPetLink() {
 	//ссылка на таблицу питомцев
-	let pet = document.querySelector("#pet > div.block_h > h2");
+	const pet = document.querySelector("#pet > div.block_h > h2");
 	pet.setAttribute('href', "https://wiki.godville.net/Питомец");
 	pet.style.cursor = "pointer";
 	pet.onclick = function (e) {
@@ -737,9 +675,9 @@ function AddPetLink() {
 //листенер ожидания реальной прогрузки документа в первый раз 
 //(потому что обычный addeventlisner('load' и аналоги иногда багано выдают неполную страницу)
 //+ эта же конструкция для включения функций в случае переключения дуэльного режима - неполной перезагрузки
-let was_runned_on = [];
+const was_runned_on = [];
 waitForContents(() => {
-	let temp_will_run_state = [];
+	const temp_will_run_state = [];
 	if (was_runned_on.length == 0) {
 		temp_will_run_state.push("base");
 		//console.log("document", document.body.outerHTML);
@@ -751,7 +689,7 @@ waitForContents(() => {
 		AddGodVoicesPopupObserver();
 	}
 
-	let title_chronique = document.querySelector("#m_fight_log div.block_h > h2");
+	const title_chronique = document.querySelector("#m_fight_log div.block_h > h2");
 	if (title_chronique && !was_runned_on.some(i => i.includes("chronique"))) {
 		AddChroniqueStepObserver();
 		if (title_chronique.textContent.includes("боя")) {
@@ -759,12 +697,12 @@ waitForContents(() => {
 		}
 		temp_will_run_state.push("chronique");
 	}
-	let polygon_title = document.querySelector("#a_central_block div.block_h > h2");
+	const polygon_title = document.querySelector("#a_central_block div.block_h > h2");
 	if (polygon_title && polygon_title.textContent.includes("Полигон") && !was_runned_on.some(i => i.includes("polygon"))) {
 		AddPolygonStepObserver();
 		temp_will_run_state.push("polygon");
 	}
-	let diary = document.querySelector("#diary div.block_h > h2");
+	const diary = document.querySelector("#diary div.block_h > h2");
 	if (diary && !was_runned_on.some(i => i.includes("diary"))) {
 		DecideToAddAuraStringObserver();
 		AddInventoryListener();
@@ -782,39 +720,39 @@ waitForContents(() => {
 	console.log("was_runned_on ", was_runned_on);
 }, 0, "main_wrapper", { childList: true, subtree: true });
 
-let godpower = document.querySelector("#cntrl > div.pbar.line > div.gp_val.l_val");
-let polygon = document.querySelector("#r_map > div.block_h > h2");
+const godpower = document.querySelector("#cntrl > div.pbar.line > div.gp_val.l_val");
+const polygon = document.querySelector("#r_map > div.block_h > h2");
 
-let diary = document.querySelector("#diary > div.block_h > h2");
+const diary = document.querySelector("#diary > div.block_h > h2");
 if (diary) {
 	//определение торговли
 
 	//газета - проклик "проверить" -> "заполнить" или "ой все" на бинго
-	let time = new Date();
+	const time = new Date();
 	if (time.getUTCHours() == 21 && time.getUTCMinutes() < 2) {
 		//запросом
 	}
 
 	//TODO плюсики
-	var pluses = document.querySelectorAll(".vote_links_b");
-	for (let i of pluses) {
+	const pluses = document.querySelectorAll(".vote_links_b");
+	for (const i of pluses) {
 		// точно минус -> "эстафеты" отдельно
 		// крафтовые класы новичков "Скрести"
-		let pos = Math.round(Math.random());
-		//let plusminus = i.children[pos];
+		const pos = Math.round(Math.random());
+		//const plusminus = i.children[pos];
 		//plusminus.click();
 	}
 
 }
 
 function FindTittleInfo(miniQuests, target) {
-	let titleInfo = [];
+	const titleInfo = [];
 	for (const miniQuestsObj of Object.values(miniQuests)) {
 		for (const blankObj of miniQuestsObj['quests']) {
-			let questBlank = blankObj.blank.slice(1);
+			const questBlank = blankObj.blank.slice(1);
 			for (const [questIndex, quest] of questBlank.entries()) {
 				if (quest.includes(target)) {
-					let tempObject = {
+					const tempObject = {
 						recency: miniQuestsObj['recency'],
 						quest,
 						questBlank,
@@ -838,15 +776,15 @@ function FindTittleInfo(miniQuests, target) {
 // Функция проверки на мини-квест и обновления информации о мини-квесте в title
 function UpdateMiniQuestInfo() {
 	console.log("UpdateMiniQuestInfo");
-	let quest_target = document.querySelector("#hk_quests_completed > div.q_name");
+	const quest_target = document.querySelector("#hk_quests_completed > div.q_name");
 	if (!quest_target.textContent.includes(' (мини)')) {
 		quest_target.title = ''; // убираем title, в случае если это не мини-квест
 		return;
 	}
-	let targetQuest = document.querySelector("#hk_quests_completed > div.q_name").textContent.replace(' (мини)', '');
+	const targetQuest = document.querySelector("#hk_quests_completed > div.q_name").textContent.replace(' (мини)', '');
 	chrome.storage.local.get('AutoGV_miniQuests').then(data => {
 		console.log('UpdateMiniQuestInfo > inside AutoGV_miniQuests');
-		let titleInfo = FindTittleInfo(data.AutoGV_miniQuests, targetQuest);
+		const titleInfo = FindTittleInfo(data.AutoGV_miniQuests, targetQuest);
 		if (titleInfo != 0) {
 			let questTitle = '', commonWarning = 0, commonRecency = 0;
 			// просмотр на одинаковые поля titleInfo 
@@ -893,15 +831,15 @@ function UpdateMiniQuestInfo() {
 // Функция добавления слушателей и обработчиков при изменении квеста и при изменении БД с мини-квестами
 function AddMiniQuestListeners() {
 	console.log("AddMiniQuestListeners start");
-	let quest_target = document.querySelector("#hk_quests_completed > div.q_name");
-	let quest_config = {
+	const quest_target = document.querySelector("#hk_quests_completed > div.q_name");
+	const quest_config = {
 		characterData: true,
 		childList: true
 	}
-	let miniQuest_callback = function (mutationsList, observer) {
+	const miniQuest_callback = function (mutationsList, observer) {
 		UpdateMiniQuestInfo();
 	}
-	let miniQuest_observer = new MutationObserver(miniQuest_callback);
+	const miniQuest_observer = new MutationObserver(miniQuest_callback);
 	miniQuest_observer.observe(quest_target, quest_config);
 	browser.storage.onChanged.addListener((changes, area) => {
 		if (area === 'local' && changes.AutoGV_miniQuests?.newValue) {

@@ -1,8 +1,8 @@
 /*
 if (chrome) browser = chrome;
 
-var CLIENT_ID = '132591198195-gu38m8sej7jakqml0ect91rvtltthesi.apps.googleusercontent.com';
-var API_KEY = 'AIzaSyASXRfXBTxiIOWwvFH7jhUmz4vaF0wgQXk';
+const CLIENT_ID = '132591198195-gu38m8sej7jakqml0ect91rvtltthesi.apps.googleusercontent.com';
+const API_KEY = 'AIzaSyASXRfXBTxiIOWwvFH7jhUmz4vaF0wgQXk';
 
 const DISCOVERY_DOCS = ['https://people.googleapis.com/$discovery/rest'];
 const SPREADSHEET_ID = '1G_IYlkPrNOtRktNgXn3_MJHSToC_aAuuEreG3l1si-4';
@@ -57,10 +57,10 @@ chrome.runtime.onMessage.addListener(
 );
 */
 
-let log = [];
+const log = [];
 chrome.runtime.onMessage.addListener(
 	function (request, sender, sendResponse) {
-		var error = chrome.runtime.lastError;
+		const error = chrome.runtime.lastError;
 		if (error) {
 			console.error(error);
 		} else {
@@ -87,14 +87,14 @@ function PrintStorage(key) {
 }
 
 function SetToStorage(propertyName, propertyObj) {
-	let a = {};
+	const a = {};
 	a[propertyName] = propertyObj;
 	chrome.storage.local.set(a);
 }
 
 function RemoveKeyFromStorage(key) {
 	chrome.storage.local.remove(key, function () {
-		var error = chrome.runtime.lastError;
+		const error = chrome.runtime.lastError;
 		if (error) {
 			console.error(error);
 		}
