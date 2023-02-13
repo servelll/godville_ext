@@ -160,19 +160,7 @@ class PolygonLog {
 	}
 }
 
-function UpdateSails(e) {
-	const slider = document.getElementById("slider");
-	if (e && slider) {
-		step = slider.value;
-		//TODO why we need this?
-		e.forEach(mutation => {
-			if (mutation.type === 'childList') {
-				console.log(mutation, 'A child node has been added or removed.');
-			}
-		});
-	}
-}
-
+const block_h = document.querySelector("#central_block .block_h");
 const header = document.querySelector("#wrap > div.lastduelpl > span > a");
 if (header?.textContent == "Полигон") {
 	const header2 = document.querySelector(".lastduelpl");
@@ -186,12 +174,22 @@ if (header?.textContent == "Полигон") {
 			polygon.AddPolygonObjects();
 		});
 	}
-
-}
-if (header?.textContent == "Заплыв") {
+} else if (header?.textContent == "Заплыв") {
 	//запрос к логу тогда (для поиска цвета близкой рыбы), когда есть смысл
 	//когда один остался нет смысла тоже
 	//если рыба одна тоже не надо
+	function UpdateSails(e) {
+		const slider = document.getElementById("slider");
+		if (e && slider) {
+			step = slider.value;
+			//TODO why we need this?
+			e.forEach(mutation => {
+				if (mutation.type === 'childList') {
+					console.log(mutation, 'A child node has been added or removed.');
+				}
+			});
+		}
+	}
 	window.addEventListener('load', e => {
 		UpdateSails();
 
@@ -200,4 +198,63 @@ if (header?.textContent == "Заплыв") {
 		const observer = new MutationObserver((mutationsList, observer) => UpdateSails(mutationsList));
 		observer.observe(target, { childList: true, subtree: true });
 	});
+} else if (block_h?.innerText.includes("Хроника подземелья")) {
+	const dmap = document.getElementById("dmap");
+	const but = document.createElement("z");
+	but.className = "my_blockh_elem";
+	function SetZTexts(bool) {
+		if (bool) {
+			but.textContent = "/⌚";
+			but.title = "Выйти из режима подсчета";
+		} else {
+			but.textContent = "⌚";
+			but.title = "Перевести карту в режим подсчета (ходов)";
+		}
+	}
+	SetZTexts(true);
+
+	function UpdateVisualSteps() {
+		const map_arr = Array.from(dmap.querySelectorAll(".dmc"));
+		const dim = GetJSCoords(map_arr[map_arr.length - 1]);
+		function GetNearObjs(target_coord) {
+			const ret_objs = [];
+			if (target_coord[1] > 0) ret_objs.push(dmap.childNodes[target_coord[1] - 1].childNodes[target_coord[0]]);
+			if (target_coord[1] < dim[1]) ret_objs.push(dmap.childNodes[target_coord[1] + 1].childNodes[target_coord[0]]);
+			if (target_coord[0] > 0) ret_objs.push(dmap.childNodes[target_coord[1]].childNodes[target_coord[0] - 1]);
+			if (target_coord[0] < dim[0]) ret_objs.push(dmap.childNodes[target_coord[1]].childNodes[target_coord[0] + 1]);
+			return ret_objs;
+		}
+		const heroes = map_arr.find(i => i.textContent == "@");
+		let temp_objs = [heroes];
+		for (let i = 0; i < 20; i++) {
+			const buff = temp_objs;
+			console.log(i, buff);
+			temp_objs = [];
+			buff.forEach(check_obj => {
+				const check_int = isNaN(parseInt(check_obj.textContent)) ? 999 : parseInt(check_obj.textContent);
+				if (i < check_int) {
+					check_obj.textContent = i;
+					const check_obj_coord = GetJSCoords(check_obj);
+					const objs = GetNearObjs(check_obj_coord).filter(obj => !obj.classList.contains("dmw"));
+					objs.forEach(obj => {
+						if (!temp_objs.includes(obj)) temp_objs.push(obj);
+					});
+				}
+			});
+		}
+		//alert(Object.entries({ dim, heroes, obj_coord }));
+	}
+	but.onclick = () => {
+		const bool = but.textContent == "⌚";
+		if (bool) {
+			UpdateVisualSteps();
+		} else {
+			document.getElementById("slider").dispatchEvent(new Event("change"));
+		}
+		SetZTexts(bool);
+	}
+	const container = document.createElement("span");
+	container.className = "my_blockh_elem_container";
+	container.appendChild(but);
+	document.querySelector("#right_block .block_h").appendChild(container);
 }

@@ -1,77 +1,96 @@
-/*
- * Сравнивает содержимое массива на... одинаковость
- *
- * @param {Array}   arr    Массив для проверки
- * @param {Boolean} strict Уровень проверки, дефолтно (false) - строгий (5 НЕ равно '5');
- *                         Если true - без проверки типов (5 БУДЕТ равно '5')
- *
- * @throws {Error} Если первый аргумент не является массивом, кидается ошибка
- *
- * @return {Boolean} Результаты проверки
- */
-function compareArr(arr, strict) {
-	let test,
-		equal = strict ? (a, b) => a == b : (a, b) => a === b;
-
-	if (!Array.isArray(arr))
-		throw new Error(`It is not an array!`);
-
-	try {
-		arr.reduce(
-			(prev, current) => {
-				if (equal(current.toUpperCase(), prev.toUpperCase()))
-					return current;
-				else
-					throw new Error(1);
-			});
-
-		test = true;
-	} catch (e) {
-		test = false;
-	}
-
-	//console.log(test, arr);
-	return test;
-}
-
 //crossword
 async function AddCrosswordThings() {
-	function FillWord(objs, z) {
-		objs.forEach(function (o, _ind) {
+	function FillWord(objs, match_or_matches, force_mark = false) {
+		let status = "fullfilled";
+		for (let i = 0; i < objs.length; i++) {
 			//console.log(`${o.getAttribute("class")}`);
-			if (o.getAttribute("class") == "sym") {
+			if (objs[i].getAttribute("class") == "sym") {
 				let x;
-				if (typeof z == "string") {
-					x = z[_ind];
-				} else if (z.length == 1 || compareArr(Array.from(z, v => v[_ind]))) {
-					if (o.value == "") x = z[0][_ind];
+				if (typeof match_or_matches == "string") {
+					x = match_or_matches[i];
+				} else if (Array.isArray(match_or_matches) && match_or_matches[0].length == 1 ||
+					Array.isArray(match_or_matches) && match_or_matches[0].length > 1 &&
+					Array.from(match_or_matches, v => v[i]).every(v => v == match_or_matches[0][i])) {
+					x = match_or_matches[0][i];
 				}
+
 				if (x) {
-					//console.log(`${x.toUpperCase()} ${o.getAttribute("id")}`);
-					o.value = x.toUpperCase();
+					if ((force_mark || objs[i].value != "") && objs[i].value != x.toUpperCase()) {
+						objs[i].style.background = "#3dc43d";
+						status = "partially_filled";
+					}
+					objs[i].value = x.toUpperCase();
+				} else {
+					status = "partially_filled";
 				}
 			}
-		});
+		}
+		return status;
 	};
 
 	function CheckCrosswordFullfilledState() {
-		if (final_mas.every(z => z.array.every(x => x.status != "not filled"))) but.style.display = "none";
+		if (final_mas.every(z => z.array.every(x => x.status != "not_filled" && x.status != "partially_filled"))) but.style.display = "none";
 	}
 	const cross = document.querySelector('.cross_q');
 	const text_mas = cross.textContent.replaceAll("\n", "").replaceAll("\t", "").replaceAll("По горизонтали:", "").split("По вертикали:");
 	const dir_mas = ['По горизонтали', 'По вертикали'];
 
-	const final_mas = text_mas.map(function (i, _index) {
+	const final_mas = text_mas.map((i, _index) => {
 		const numbers = i.match(/\d+/g);
 		const types = i.match(/[а-яА-Я ]{2,}/g);
 		return {
-			dir: dir_mas[_index], array: numbers.map(function (j, index) {
-				return { index: j, value: types[index].trim(), status: "not filled" };
+			dir: dir_mas[_index], array: numbers.map((j, index) => {
+				return {
+					index: j, value: types[index].trim(), status: "not_filled",
+					objs: document.querySelectorAll(`[aria-label *= '${j} ${dir_mas[_index]}']`)
+				};
 			})
 		};
 	});
-	//TODO почистить от пользовательского мусора на всякий
+
+	function clear() {
+		document.querySelectorAll('#cross_tbl .td_cell:not(.known) input').forEach(obj => obj.value = "");
+	}
+	//TODO для дебага не чистим от пользовательского мусора
+	clear();
 	console.log("final_mas", final_mas);
+
+	//чистим старое описание (ставим свои нормальные тэги для устаноки титлов)
+	cross.replaceChildren();
+	final_mas.forEach(j => {
+		const header_span = document.createElement("span");
+		header_span.textContent = j.dir + ":";
+		cross.appendChild(header_span);
+		cross.append(document.createTextNode(" "));
+		const temp_obj_array = j.array.map(i => {
+			const z = document.createElement("z");
+			z.id = `cross_${j.dir == "По горизонтали" ? "h" : "v"}_${i.index}`;
+			z.textContent = `${i.index}.\u00A0${i.value}.`;
+			return z;
+		});
+		for (let k = 0; k < temp_obj_array.length; k++) {
+			cross.appendChild(temp_obj_array[k]);
+
+			if (k < temp_obj_array.length - 1) {
+				const span = document.createElement("span");
+				span.textContent = " ";
+				cross.append(span);
+			}
+		}
+		if (j.dir == "По горизонтали") cross.appendChild(document.createElement("br"));
+	});
+	function SetTitles() {
+		final_mas.forEach(j => {
+			j.array.forEach(i => {
+				const id = `cross_${j.dir == "По горизонтали" ? "h" : "v"}_${i.index}`;
+				const z = document.getElementById(id);
+				const array = ["status", "group_num", "match", "total_regex_mask"].map(prop => `${prop}: ${i[prop]}`);
+				z.title = array.join("\n");
+				z.style.backgroundColor = (i.status == "fullfilled" || i.status == "not_filled") ? "" : "#3dc43d";
+			});
+		});
+	}
+	SetTitles();
 
 	const terrain_obj = await chrome.storage.local.get("terrain");
 	const terrain_source = Array.from(terrain_obj["terrain"]).join("\n");
@@ -85,21 +104,25 @@ async function AddCrosswordThings() {
 	cr.style = "text-align: center";
 	cr.insertBefore(but, document.querySelector("#cross_block form"));
 
-	const pos_mas = [];
-	let accuracy_level = 0;
+	let unaccuracy_level = 0;
 	const url = chrome.runtime.getURL('parsed_words_for_crossword.txt');
 	const response = await fetch(url);
 	const data = await response.text();
+
+	//при формировании списка отдельных типов мы учитывваем, что в файле идут сначала А->Я, потом другие символы
+	//также, для простоты, в каждом списке есть А, поэтому не усложняем алгоритм до более общего 
+	const pos_mas = [0];
 	const diff_types_pos = [...data.matchAll(/^А.+/gim)];
-	let last_pos = -100;
+	let last_pos = 0;
 	diff_types_pos.forEach(v => {
 		if (v.index > last_pos) {
 			pos_mas.push(v.index);
 		}
-		last_pos = v.index + v[0].length + 1;
+		last_pos = v.index + v[0].length + 3;//на всякий случай \r\n
 	});
 	pos_mas.push(data.length);
 	console.log("pos_mas", pos_mas);
+	if (pos_mas.length != 9) alert("нестандартный parsed_words_for_crossword.txt");
 
 	but.addEventListener("click", async function () {
 		const time = new Date();
@@ -110,8 +133,7 @@ async function AddCrosswordThings() {
 
 		const previous_mas = final_mas;
 		final_mas.forEach(j => {
-			j.array.filter(a => a.status == "not filled").forEach(i => {
-				i.objs = document.querySelectorAll(`[aria-label *= '${i.index} ${j.dir}']`);
+			j.array.filter(a => a.status != "fullfilled").forEach(i => {
 				const _masks_mas = Array.from(i.objs, function (node) {
 					const symb = (node.getAttribute("class") == "sym") ? node.value : node.innerHTML;
 					if (symb == " ") return " ";
@@ -120,29 +142,35 @@ async function AddCrosswordThings() {
 				});
 
 				let source;
-				i.total_regex_mask = "^" + _masks_mas.join("");
-				const types_mas = ['монстр', 'трофей', 'умение', 'снаряжение', 'босс', 'город'];
-				const num = types_mas.findIndex(type => new RegExp(`${type}`, 'gi').test(i.value));
-				if (num == -1) {
+				i.total_regex_mask = (unaccuracy_level < 2) ? "^" : "";
+				i.total_regex_mask += _masks_mas.join("");
+				const types_mas = ['монстр', 'трофей', 'умение', 'снаряжение', 'босс', 'город', 'местность', 'тварь'];
+				const group_num = types_mas.findIndex(type => i.value.toLowerCase().includes(type));
+				if (group_num == -1) {
 					if (seaMonsters_source != "" && /мор/gi.test(i.value)) {
 						source = seaMonsters_source;
 					} else if (terrain_source != "" && /местност/gi.test(i.value)) {
 						source = terrain_source;
 					}
 				} else {
-					const indexFirst = (accuracy_level > 1) ? 0 : pos_mas[num];
-					const indexLast = (accuracy_level > 1) ? pos_mas[pos_mas.length - 1] : pos_mas[num + 1];
+					i.group_num = group_num;
+					const indexFirst = (unaccuracy_level > 1) ? 0 : pos_mas[group_num];
+					const indexLast = (unaccuracy_level > 1) ? pos_mas[pos_mas.length - 1] : pos_mas[group_num + 1];
 					source = data.substring(indexFirst, indexLast);
-					if (accuracy_level < 2 && i.value.includes('Жирный')) i.total_regex_mask += "(?=\|\(.*жирный.*\))";
+					if (unaccuracy_level < 2 && group_num == 1 && i.value.includes('Жирный')) i.total_regex_mask += "(?=\|\(.*жирный.*\))";
+					if (unaccuracy_level < 2 && group_num == 4 && i.value.includes('Подземный')) i.total_regex_mask += "(?=\|\(.*(подземельный)|(подвальный).*\))";
 				}
 
 				if (source) {
-					//Корован как Сильный монстр????
+					//Корован как Сильный монстр или босс????
 					i.match = source.match(new RegExp(i.total_regex_mask, "gim"));
 					if (i.match) {
 						i.match = Array.from(new Set(i.match));
 					}
-				} else throw new Error("unknown category!");
+				} else {
+					console.log(i.objs);
+					throw new Error("unknown category!");
+				}
 			});
 		});
 		//check Confilcts of mas.copy
@@ -160,21 +188,20 @@ async function AddCrosswordThings() {
 			j.array.forEach(i => {
 				//общее множеств и одиночки
 				if (i.match) {
-					FillWord(i.objs, i.match);
-					if (i.match.length == 1) i.status = "filled";
+					i.status = FillWord(i.objs, i.match);
 				}
 			});
 		});
 
 		//на 2 - позволяем пользователю выбрать дубли оставшегося
-		if (accuracy_level >= 3) {
+		if (unaccuracy_level >= 3) {
 			final_mas.forEach(j => {
 				j.array.filter(a => a.match && a.match.length > 1).forEach(i => {
 					const b = document.createElement("button");
 					b.style = "margin: 10px";
 					b.textContent = `${i.index} ${j.dir}: ${i.match[0]}`;
 					b.value = 0;
-					FillWord(i.objs, i.match[0]);
+					FillWord(i.objs, i.match[0], true);
 
 					b.onclick = function () {
 						this.value++;
@@ -184,26 +211,45 @@ async function AddCrosswordThings() {
 					}
 
 					cr.insertBefore(b, but);
-					i.status = "user choose fill";
+					i.status = "user_choose_fill";
 				});
 			});
 		}
 
 		CheckCrosswordFullfilledState();
+		SetTitles();
 		if (previous_mas == final_mas) {
-			accuracy_level++;
-			console.log("Повышаем уровень точности:", accuracy_level);
-			if (accuracy_level == 0) but.title = `Уровень ${accuracy_level}: Поиск по маске только внутри категории и строгая проверка дополнительных свойств (жирный трофей/сильный монстр)`;
-			else if (accuracy_level == 1) but.title = `Уровень ${accuracy_level}: Поиск по маске во всем файле и строгая проверка дополнительных свойств (жирный трофей/сильный монстр)`;
-			else but.title = `Уровень ${accuracy_level} (2+): Поиск по маске во всем файле и игнорирование доп свойств (жирный трофей/сильный монстр)`;
+			unaccuracy_level++;
+			console.log("Повышаем уровень точности:", unaccuracy_level);
+			if (unaccuracy_level == 0) but.title = `Уровень ${unaccuracy_level}: Поиск по маске только внутри категории и строгая проверка дополнительных свойств (жирный трофей/сильный монстр/подземный босс)`;
+			else if (unaccuracy_level == 1) but.title = `Уровень ${unaccuracy_level}: Поиск по маске во всем файле и строгая проверка дополнительных свойств (жирный трофей/сильный монстр/подземный босс)`;
+			else but.title = `Уровень ${unaccuracy_level} (2+): Поиск по маске во всем файле и игнорирование доп свойств (жирный трофей/сильный монстр)`;
 		}
 	});
 
 	//вешаем листенер для детекта ошибок с сервера
 	document.getElementById("crossword_submit")?.addEventListener("click", (e) => {
 		e.preventDefault();
-		if (document.querySelectorAll("#cross_tbl"))
-			but.title += "\n";
+
+		const crossw_table = document.getElementById("cross_tbl");
+		if (crossw_table) {
+
+			const callback = function (mutationsList, observer) {
+				mutationsList.forEach(mut => {
+					if (mut.target.style.backgroundColor == "rgb(255, 153, 153)") {
+						mut.target.querySelector("input").value = "";
+						but.style.display = "";
+					}
+				});
+			}
+			const config = {
+				attributes: true,
+				subtree: true
+			};
+
+			const observer = new MutationObserver(callback);
+			observer.observe(crossw_table, config);
+		}
 	});
 
 	console.log("AddCrosswordThings done");
@@ -524,8 +570,9 @@ function AddCondensatorThings() {
 // Coupon things
 function AddCouponThings() {
 	const button = document.querySelector("#coupon_b");
-	const coupon_text = document.querySelector("#cpn_name").innerText.replaceAll('\n', ' ').trim();
+	const coupon_text = document.querySelector("#cpn_name").innerText.replaceAll('\n', ' ').toLowerCase().trim();
 
+	//даже не пытаемся добавлять элементы, если купон уже забран
 	if (!button.disabled) {
 		// observer on success button click for remove ats
 		//срабатывает в случае, если кнопка недоступна (в дуэлях и при переключении режимов)
@@ -543,7 +590,7 @@ function AddCouponThings() {
 			console.log("coupon_callback inside");
 			if (!button.disabled) {
 				Array.from(document.querySelectorAll("#bgn td")).forEach((tableElem) => {
-					if (tableElem.classList.contains("bgnk") && coupon_text.includes(tableElem.textContent)) {
+					if (!tableElem.classList.contains("bgnk") && coupon_text.includes(tableElem.textContent)) {
 						// Конструктор элемента @
 						const at = document.createElement("a");
 						at.textContent = "@";

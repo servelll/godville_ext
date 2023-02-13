@@ -393,8 +393,6 @@ async function AddErinomeLogsCheckingActions(wup, input_node) {
                 const bool = (key == 'MyGV_LoadedLogs') ? true : (key == 'MyGV_NotLoadedLogs') ? false : undefined;
                 if (bool != undefined) {
                     const a = MarkRow(date_td, bool, "https://gv.erinome.net/duels/log/" + d_id);
-                    a.style.backgroundColor = "Aqua";
-                    a.title = "Появились новые данные";
                     if (bool) dom_saved.push(d_id); else dom_unsaved.push(d_id);
                 } else {
                     const a = date_td.querySelector("a");
@@ -571,15 +569,13 @@ function MarkRow(row_obj, url_exist, link) {
     if (!a) {
         a = CreateLogLinkCheckingButtonObject(link);
         a.style.textDecoration = "none";
-        a.textContent = new_text;
         row_obj.prepend(a, " ");
-    } else if (new_text == "[+]") {
-        a.textContent = "[+]";
-    } else if (!a.textContent || new_text == a.textContent) {
-        a.textContent = new_text;
     } else {
-        a.textContent = `${a.textContent.slice(0, -1)}->${new_text.slice(1)}`;
+        a.style.backgroundColor = a.style.backgroundColor ? "" : "aqua";
+        a.title = "Появились новые данные";
     }
+    a.textContent = new_text;
+    //a.textContent = `${a.textContent.slice(0, -1)}->${new_text.slice(1)}`;
     if (a.textContent == "[+]") {
         a.onclick = (e) => {
             e.preventDefault();
@@ -590,6 +586,12 @@ function MarkRow(row_obj, url_exist, link) {
     return a;
 }
 //superhero.js && logs.js
+function GetJSCoords(obj) {
+    //console.log(obj, obj.parentNode);
+    const Col = Array.from(obj.parentNode.childNodes).indexOf(obj);
+    const Row = Array.from(obj.parentNode.parentNode.childNodes).indexOf(obj.parentNode);
+    return [Col, Row];
+}
 function CreateLogLinkCheckingButtonObject(id) {
     const a = document.createElement("a");
     a.className = "pointer_link";
@@ -601,7 +603,7 @@ function CreateLogLinkCheckingButtonObject(id) {
         e.preventDefault();
         const b = await UrlExistsAsync(link);
         a.textContent = b ? "[+]" : "[-]";
-        a.style.backgroundColor = a.style.backgroundColor ? "" : "aqua";
+        a.style.backgroundColor = a.style.backgroundColor ? "" : "pink";
         AppendToArrayInStorage(b ? "MyGV_LoadedLogs" : "MyGV_NotLoadedLogs", id);
         if (b) {
             RemoveFromArrayInStorage("MyGV_NotLoadedLogs", id);

@@ -43,11 +43,11 @@ function AddLogsHistoryPopupObserver() {
 
 function AddLaboratoryPopupObserver() {
 	AddAbstactPopupObserver("Laboratory", "Лаборатория", function (wup, wup_title) {
-		let a = wup_title.querySelector("#MyGV_CalcLink");
+		let a = wup_title.querySelector(".center_link");
 		if (!a) {
 			a = document.createElement("a");
 			a.textContent = "Ссылка на калькулятор";
-			a.id = "MyGV_CalcLink";
+			a.className = "center_link";
 			a.title = "Полный рассчет на http://godb.gandjubas.de/";
 			a.onclick = () => {
 				const txt = Array.from(wup.querySelectorAll(".wup-content > div .bps_line")).reduce((acc, curr) => {
@@ -296,12 +296,6 @@ function AddPolygonStepObserver() {
 	console.log("AddPolygonStepObserver done");
 }
 
-function GetJSCoords(obj) {
-	console.log(obj, obj.parentNode);
-	const Col = Array.from(obj.parentNode.childNodes).indexOf(obj);
-	const Row = Array.from(obj.parentNode.parentNode.childNodes).indexOf(obj.parentNode);
-	return [Col, Row];
-}
 //TODO add ONLY FIRST level
 //TODO check buffered level
 function AddOrUpdateAquariumLinks() {
@@ -325,10 +319,10 @@ function AddOrUpdateAquariumLinks() {
 		return;
 	}
 
-	let a = document.getElementById("MyGV_AquaLink");
+	let a = m.querySelector(".center_link");
 	if (!a) {
 		a = document.createElement("a");
-		a.id = "MyGV_AquaLink";
+		a.className = "center_link";
 		a.textContent = "Карта аквариума";
 		a.title = "С сайта digdog.web.app на основе статистики";
 		m.appendChild(a);
@@ -409,7 +403,9 @@ let mutatable_boss_abilities_history = "";
 
 //TODO для логов
 function AddHolemSearch() {
-	const boss_name = document.querySelector("#o_hk_name > .l_val").textContent;
+	const boss = document.querySelector("#o_hk_name > .l_val");
+	if (!boss) return; //для отрядов
+	const boss_name = boss.textContent;
 	//TODO проверить на зовущем
 	const boss_abilities = document.querySelector('#o_info > .block_content > .line:not([id]) > .l_val').textContent;
 	if (boss_abilities.split(", ").length == 3) {
@@ -445,7 +441,6 @@ function AddHolemSearch() {
 		a.href = link;
 		const where = document.querySelector("#o_info > .block_content");
 		where.insertBefore(a, where.lastElementChild);
-
 	}
 
 	console.log("AddHolemSearch done");
@@ -719,7 +714,7 @@ function AddSkillsTypesNumbers() {
 	${c[0]} боевых
 	${c[1]} торговых
 	${c[2]} транспортных`;
-		if (observer) alert("updated AddSkillsTypesNumbers");
+		//if (observer) alert("updated AddSkillsTypesNumbers");
 	}
 	callback();
 	skills_left.appendChild(div);

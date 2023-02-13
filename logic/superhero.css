@@ -13,13 +13,12 @@
     left: 261px;
 }
 
-#MyGV_CalcLink {
+.center_link {
     text-align: center;
-}
-
-#MyGV_AquaLink {
-    text-align: center;
-    display: block;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 #MyGV_ToNextHint,
@@ -47,7 +46,7 @@
     position: absolute;
     left: var(--Left);
     content: " ";
-    height: 4px;
+    height: 5px;
     width: var(--Width);
     opacity: 0.8;
     z-index: 1;
