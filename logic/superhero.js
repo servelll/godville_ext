@@ -725,8 +725,6 @@ waitForContents(() => {
         AddInventoryListener();
         //AddFieldNewsListener();
         //AddMonsterInvitingListener();
-        AddFieldHeaderObserver();
-        AddFieldTaskObserver();
         UpdateMiniQuestsDB();
         AddMiniQuestListeners();
         AddPetLink();
