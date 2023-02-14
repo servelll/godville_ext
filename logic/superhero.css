@@ -13,6 +13,7 @@
     left: 261px;
 }
 
+/*Aquarium link + laboratory link*/
 .center_link {
     text-align: center;
     user-select: none;
@@ -34,24 +35,6 @@
     height: 100%;
     width: 2px;
     background: #ccc;
-}
-
-#news_pb .p_bar.n_pbar {
-    position: relative;
-    z-index: 2;
-    opacity: 0.8;
-}
-
-#news_pb .p_bar.n_pbar div:before {
-    position: absolute;
-    left: var(--Left);
-    content: " ";
-    height: 5px;
-    width: var(--Width);
-    opacity: 0.8;
-    z-index: 1;
-    border: solid darkred 2px;
-    visibility: var(--Visibility);
 }
 
 #skill_badge2 {
