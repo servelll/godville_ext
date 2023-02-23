@@ -84,3 +84,24 @@
 .my_blockh_elem {
     cursor: pointer;
 }
+
+/*need add to fix erinome.logs*/
+.dml {
+    position: relative;
+    height: 22px;
+}
+
+.dmc {
+    position: absolute;
+}
+
+.dmc:not(.dmw):after {
+    counter-reset: number calc(var(--startIndex) + var(--move));
+    content: counter(number);
+    position: absolute;
+    background: #ffffff;
+    min-width: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    visibility: var(--move-visibility, hidden);
+}

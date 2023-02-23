@@ -587,10 +587,22 @@ function MarkRow(row_obj, url_exist, link) {
 }
 //superhero.js && logs.js
 function GetJSCoords(obj) {
-    //console.log(obj, obj.parentNode);
-    const Col = Array.from(obj.parentNode.childNodes).indexOf(obj);
     const Row = Array.from(obj.parentNode.parentNode.childNodes).indexOf(obj.parentNode);
-    return [Col, Row];
+    const Col = Array.from(obj.parentNode.childNodes).indexOf(obj);
+    const ret = { Row, Col };
+    //console.log(obj, obj.parentNode, ret);
+    return ret;
+}
+function GetNearObjs(obj, arr) {
+    const tc = (obj?.Col || obj?.Row) ? obj : GetJSCoords(obj);
+    const ret_objs = {};
+    //console.log(arr.innerHTML, tc);
+    if (tc.Row > 0) ret_objs.north = arr.childNodes[tc.Row - 1].childNodes[tc.Col];
+    if (tc.Row < arr.childNodes.length - 1) ret_objs.south = arr.childNodes[tc.Row + 1].childNodes[tc.Col];
+    if (tc.Col > 0) ret_objs.west = arr.childNodes[tc.Row].childNodes[tc.Col - 1];
+    if (tc.Col < arr.childNodes[0].childNodes.length - 1) ret_objs.east = arr.childNodes[tc.Row].childNodes[tc.Col + 1];
+    //console.log(ret_objs);
+    return ret_objs;
 }
 function CreateLogLinkCheckingButtonObject(id) {
     const a = document.createElement("a");
@@ -621,7 +633,7 @@ function EditAByChromeStorageData(a, id) {
             a.removeAttribute("title");
             a.onclick = (e) => {
                 e.preventDefault();
-                window.open(link, '_blank');
+                window.open(a.href, '_blank');
             }
             return a;
         }
@@ -631,4 +643,62 @@ function EditAByChromeStorageData(a, id) {
             }
         });
     });
+}
+
+function AddMovesCountVisibleTools(dmap_selector, title_selector) {
+    const dmap = document.querySelector(dmap_selector);
+    if (dmap) {
+        const but = document.createElement("z");
+        but.className = "my_blockh_elem";
+        function SetZTexts(bool) {
+            if (bool) {
+                but.textContent = "/⌚";
+                but.title = "Выйти из режима подсчета";
+            } else {
+                but.textContent = "⌚";
+                dmap.style.setProperty("--move-visibility", "hidden");
+                but.title = "Перевести карту в режим подсчета (ходов)";
+            }
+        }
+        SetZTexts(false);
+
+        function UpdateVisualSteps() {
+            dmap.style.setProperty("--move-visibility", "visible");
+            dmap.style.setProperty("--startIndex", 0);
+            const map_arr = Array.from(dmap.querySelectorAll(".dmc"));
+            const heroes = map_arr.find(i => i.textContent == "@");
+            let temp_objs = [heroes];
+            for (let i = 0; i < 20; i++) {
+                if (temp_objs.length == 0) break;
+                const iterated_cells = temp_objs;
+                temp_objs = [];
+                iterated_cells.forEach(check_obj => {
+                    const int = parseInt(check_obj.style.getPropertyValue("--move"));
+                    //no reason to chech NaN
+                    if (i < int || isNaN(int)) {
+                        check_obj.style.setProperty("--move", i);
+                        //console.log(check_obj, dmap, GetNearObjs(check_obj, dmap));
+                        const objs = Object.values(GetNearObjs(check_obj, dmap)).filter(obj => !obj.classList.contains("dmw"));
+                        objs.forEach(obj => {
+                            if (!temp_objs.includes(obj)) temp_objs.push(obj);
+                        });
+                    }
+                });
+            }
+            //alert(Object.entries({ dim, heroes, obj_coord }));
+        }
+        but.onclick = () => {
+            const bool = but.textContent == "⌚";
+            if (bool) {
+                UpdateVisualSteps();
+            } else {
+                document.getElementById("slider")?.dispatchEvent(new Event("change"));
+            }
+            SetZTexts(bool);
+        }
+        const container = document.createElement("span");
+        container.className = "my_blockh_elem_container";
+        container.appendChild(but);
+        document.querySelector(title_selector).appendChild(container);
+    }
 }

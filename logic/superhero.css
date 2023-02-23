@@ -46,3 +46,34 @@
 #skill_badge2:hover {
     color: #627D90;
 }
+
+/*Directions cross*/
+.cross {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    right: 10px;
+    top: 15px;
+    font-size: xx-large;
+    gap: 8px;
+}
+
+.cross span {
+    cursor: pointer;
+    user-select: none;
+}
+
+.cross span:hover {
+    color: green;
+}
+
+.center {
+    display: flex;
+    gap: 25px;
+    justify-content: space-between;
+}
+
+#map .block_content {
+    position: relative;
+}

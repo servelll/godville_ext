@@ -308,14 +308,30 @@ function AddOrUpdateAquariumLinks() {
         return;
     }
     const exitCoord = GetJSCoords(exitObj);
-    const exitRowsNear = [-1, 0, 1].map(i => Array.from(map.childNodes)[exitCoord[1] + i]);
-    const exitCellsNear_H = exitRowsNear.map(r => [-1, 0, 1].map(j => Array.from(r.childNodes)[exitCoord[0] + j]));
+    const cellsNearExit = GetNearObjs(exitCoord, map);
+    //console.log("cellsNearExit", cellsNearExit);
+    const wallsNearExit_keys = Object.entries(cellsNearExit).reduce((acc, [key, value]) => {
+        if (value.classList.contains("dmw")) {
+            acc.push(key);
+        }
+        return acc;
+    }, []);
+    if (wallsNearExit_keys.length == 0) {
+        console.log("AddOrUpdateAquariumLinks return bcs wallsNearExit.length == 0");
+        return;
+    }
+    //console.log("wallsNearExit_keys", wallsNearExit_keys);
+    let borders_mas = {
+        north: Array.from(map.firstElementChild.childNodes),
+        south: Array.from(map.lastElementChild.childNodes),
+        west: Array.from(map.childNodes, e => e.firstElementChild),
+        east: Array.from(map.childNodes, e => e.lastElementChild),
+    };
+    //console.log("borders_mas", borders_mas);
 
-    const north_south_NearExit = [0, 2].filter(i => exitCellsNear_H[i].every(cell => cell.className.includes("dmw")));
-    const west_east_NearExit = [0, 2].filter(i => exitCellsNear_H.every(r => r[i].className.includes("dmw")));
-    //console.log(north_south_NearExit, west_east_NearExit);
-    if (north_south_NearExit.length > 0 || west_east_NearExit.length > 0) {
-        console.log("AddOrUpdateAquariumLinks return exitNotNearWall");
+    const is_any_filtered_border_fully_walled = wallsNearExit_keys.some(dir => borders_mas[dir].every(obj => obj.classList.contains("dmw")));
+    if (!is_any_filtered_border_fully_walled) {
+        console.log("AddOrUpdateAquariumLinks return2 bcs is_any_filtered_border_fully_walled == false");
         return;
     }
 
@@ -327,30 +343,8 @@ function AddOrUpdateAquariumLinks() {
         a.title = "С сайта digdog.web.app на основе статистики";
         m.appendChild(a);
     }
-
-    const borders_mas = [
-        Array.from(map.firstElementChild.childNodes),
-        Array.from(map.lastElementChild.childNodes),
-        Array.from(map.childNodes, e => e.firstElementChild),
-        Array.from(map.childNodes, e => e.lastElementChild)
-    ];
-    console.log("borders_mas", borders_mas);
-
-    let indexes = 0;
-    //in corners
-    if (north_south_NearExit.length > 0 && west_east_NearExit.length > 0) {
-
-    } else if (north_south_NearExit.length > 0 || west_east_NearExit.length > 0) {
-        //near wall
-        if (north_south_NearExit.length > 0) {
-            let borders_index = north_south_NearExit / 2;
-        }
-        if (west_east_NearExit.length > 0) {
-            let borders_index = 2 + west_east_NearExit / 2;
-        }
-    }
-
-    const chosenPoints = [borders_mas[0], borders_mas[1]].reduce((acc, e) => {
+    return;
+    const chosenPoints = [borders_mas.north, borders_mas.south].reduce((acc, e) => {
 
         //acc.push([e[0], e[]]);
     }, []);
@@ -362,7 +356,7 @@ function AddOrUpdateAquariumLinks() {
         const coords = GetJSCoords(e);
         const type = 0;
         if (e.className.includes("dmw")) return null;
-        return `${coords[1] - exitCoord[1] + 17},${coords[0] - exitCoord[0] + 17}-` + type;
+        return `${coords.Row - exitCoord.Row + 17},${coords.Col - exitCoord.Col + 17}-` + type;
     }).filter(a => a);
 
     const link = "!https://digdog.web.app/?points=" + points_mas.join(";");
@@ -711,6 +705,9 @@ waitForContents(() => {
         AddChroniqueStepObserver();
         if (title_chronique.textContent.includes("боя")) {
             AddHolemSearch();
+        } else {
+            AddDirectionsCross();
+            AddMovesCountVisibleTools("#map > div.block_content > div:nth-child(1) > div:nth-child(2)", "#map .block_title");
         }
         temp_will_run_state.push("chronique");
     }
@@ -863,4 +860,30 @@ function AddMiniQuestListeners() {
         }
     });
     console.log("AddMiniQuestListeners done");
+}
+
+function AddDirectionsCross() {
+    const cross = document.createElement("div");
+    document.querySelector("#map .block_content").appendChild(cross);
+    cross.outerHTML = `<div class="cross">
+    <span class="top">△</span>
+    <div class="center">
+        <span class="left">◁</span>
+        <span class="right">▷</span>
+    </div>
+    <span class="bottom">▽</span>
+</div>`;
+    function sendGodVoice(text) {
+        document.getElementById("godvoice").value = text;
+        document.getElementById("voice_submit").click();
+    }
+
+    document.querySelector(".cross .top").onclick = () => sendGodVoice("Север Ю﻿г За﻿пад Вос﻿ток");
+    document.querySelector(".cross .bottom").onclick = () => sendGodVoice("Се﻿вер Юг За﻿пад Вос﻿ток");
+    document.querySelector(".cross .left").onclick = () => sendGodVoice("Се﻿вер Ю﻿г Запад Вос﻿ток");
+    document.querySelector(".cross .right").onclick = () => sendGodVoice("Се﻿вер Ю﻿г За﻿пад Восток");
+    //document.querySelector(".cross .up").onclick = () => sendGodVoice("Вверх ");
+    //document.querySelector(".cross .down").onclick = () => sendGodVoice("");
+
+    console.log("AddDirectionsCross done");
 }
