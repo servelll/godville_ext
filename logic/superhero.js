@@ -300,6 +300,10 @@ function AddPolygonStepObserver() {
 //TODO check buffered level
 function AddOrUpdateAquariumLinks() {
     const m = document.querySelector("#map > div.block_content > div");
+    if (!m) {
+        console.log("AddOrUpdateAquariumLinks m==null return");
+        return;
+    }
     const map = m.childNodes[1];
 
     const exitObj = document.querySelector("[title*='Выход из подземелья']") || document.querySelector("[title*='Команда героев']");
@@ -344,6 +348,7 @@ function AddOrUpdateAquariumLinks() {
         m.appendChild(a);
     }
     return;
+    TODO
     const chosenPoints = [borders_mas.north, borders_mas.south].reduce((acc, e) => {
 
         //acc.push([e[0], e[]]);
@@ -866,24 +871,38 @@ function AddDirectionsCross() {
     const cross = document.createElement("div");
     document.querySelector("#map .block_content").appendChild(cross);
     cross.outerHTML = `<div class="cross">
-    <span class="top">△</span>
-    <div class="center">
-        <span class="left">◁</span>
-        <span class="right">▷</span>
+    <div class="row">
+        <span class="top">▲</span>
+        <span class="in top">↑</span>
     </div>
-    <span class="bottom">▽</span>
+    <div class="row">
+        <span class="left">◄</span>
+        <span class="in left">←</span>
+        <span class="center_box"></span>
+        <span class="in right">→</span>
+        <span class="right">►</span>
+    </div>
+    <div class="row">
+        <span class="bottom">▼</span>
+        <span class="in bottom">↓</span>
+    </div>
 </div>`;
-    function sendGodVoice(text) {
-        document.getElementById("godvoice").value = text;
-        document.getElementById("voice_submit").click();
-    }
 
-    document.querySelector(".cross .top").onclick = () => sendGodVoice("Север Ю﻿г За﻿пад Вос﻿ток");
-    document.querySelector(".cross .bottom").onclick = () => sendGodVoice("Се﻿вер Юг За﻿пад Вос﻿ток");
-    document.querySelector(".cross .left").onclick = () => sendGodVoice("Се﻿вер Ю﻿г Запад Вос﻿ток");
-    document.querySelector(".cross .right").onclick = () => sendGodVoice("Се﻿вер Ю﻿г За﻿пад Восток");
-    //document.querySelector(".cross .up").onclick = () => sendGodVoice("Вверх ");
-    //document.querySelector(".cross .down").onclick = () => sendGodVoice("");
+    const mas = [
+        { class: ".top", str: "Север Ю﻿г За﻿пад Вос﻿ток" },
+        { class: ".bottom", str: "Се﻿вер Юг За﻿пад Вос﻿ток" },
+        { class: ".left", str: "Се﻿вер Ю﻿г Запад Вос﻿ток" },
+        { class: ".right", str: "Се﻿вер Ю﻿г За﻿пад Восток" }
+    ];
+    mas.forEach(c => {
+        document.querySelector(".cross :not(.in)" + c.class).onclick = () => {
+            document.getElementById("godvoice").value = c.str;
+            document.getElementById("voice_submit").click();
+        };
+        document.querySelector(".cross .in" + c.class).onclick = () => {
+            document.getElementById("godvoice").value += " " + c.str;
+        };
+    });
 
     console.log("AddDirectionsCross done");
 }

@@ -687,18 +687,24 @@ function AddMovesCountVisibleTools(dmap_selector, title_selector) {
             }
             //alert(Object.entries({ dim, heroes, obj_coord }));
         }
-        but.onclick = () => {
+        function but_onclick() {
             const bool = but.textContent == "⌚";
             if (bool) {
                 UpdateVisualSteps();
             } else {
-                document.getElementById("slider")?.dispatchEvent(new Event("change"));
+                //document.getElementById("slider")?.dispatchEvent(new Event("change"));
             }
             SetZTexts(bool);
         }
+        but.onclick = but_onclick;
         const container = document.createElement("span");
         container.className = "my_blockh_elem_container";
         container.appendChild(but);
         document.querySelector(title_selector).appendChild(container);
+
+        document.getElementById("slider")?.addEventListener("input", () => {
+            //SetZTexts(false);
+            but_onclick();
+        });
     }
 }

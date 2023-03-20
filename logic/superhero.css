@@ -56,7 +56,7 @@
     right: 10px;
     top: 15px;
     font-size: xx-large;
-    gap: 8px;
+    line-height: 100%;
 }
 
 .cross span {
@@ -68,10 +68,13 @@
     color: green;
 }
 
-.center {
+.cross .row {
     display: flex;
-    gap: 25px;
     justify-content: space-between;
+}
+
+.center_box {
+    width: 12px;
 }
 
 #map .block_content {
