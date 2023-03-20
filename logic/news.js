@@ -592,12 +592,16 @@ function AddCouponThings() {
         const coupon_callback = function (mutationsList, observer) {
             console.log("coupon_callback inside");
             if (!button.disabled) {
-                Array.from(document.querySelectorAll("#bgn td")).forEach((tableElem) => {
-                    if (!tableElem.classList.contains("bgnk") && coupon_text.includes(tableElem.textContent)) {
+                Array.from(document.querySelectorAll("#bgn td")).forEach(td => {
+                    if (coupon_text.includes(td.textContent)) {
                         // Конструктор элемента @
                         const at = document.createElement("a");
                         at.textContent = "@";
-                        at.className = 'my_at';
+                        if (!td.querySelector("span").classList.contains("bgnk")) {
+                            at.className = 'my_at';
+                        } else {
+                            at.style.cursor = "pointer";
+                        }
                         at.title = coupon_text;
                         // Pushing at is pushing btn to take coupon
                         at.addEventListener("click", () => {
@@ -608,7 +612,7 @@ function AddCouponThings() {
                         atdiv.className = 'my_div';
                         atdiv.appendChild(at);
                         at.after(')');
-                        tableElem.appendChild(atdiv);
+                        td.appendChild(atdiv);
                     }
                 });
             }
