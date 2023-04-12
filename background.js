@@ -58,61 +58,61 @@ chrome.runtime.onMessage.addListener(
 */
 
 const log = [];
-chrome.runtime.onMessage.addListener(
-	function (request, sender, sendResponse) {
-		const error = chrome.runtime.lastError;
-		if (error) {
-			console.error(error);
-		} else {
-			console.log(request, sender);
-			if (request.command == "print_popup") {
-				log.push(request.text);
-			}
-			if (request.command == "load_log") {
-				sendResponse(log.join("\n"));
-			}
-		}
-		return true;
-	}
-);
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    const error = chrome.runtime.lastError;
+    if (error) {
+        console.error(error);
+    } else {
+        console.log(request, sender);
+        if (request.command == 'print_popup') {
+            log.push(request.text);
+        }
+        if (request.command == 'load_log') {
+            sendResponse(log.join('\n'));
+        }
+    }
+    return true;
+});
 
 //https://stackoverflow.com/questions/10994324/chrome-extension-content-script-re-injection-after-upgrade-or-install/11598753#11598753
 chrome.runtime.onInstalled.addListener(async () => {
-	console.log("reconnected3");
-	for (const cs of chrome.runtime.getManifest().content_scripts) {
-		for (const tab of await chrome.tabs.query({ url: cs.matches })) {
-			chrome.scripting.executeScript({
-				target: { tabId: tab.id },
-				files: cs.js,
-			});
-		}
-	}
+    console.log('reconnected3');
+    for (const cs of chrome.runtime.getManifest().content_scripts) {
+        for (const tab of await chrome.tabs.query({ url: cs.matches })) {
+            chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                files: cs.js,
+            });
+        }
+    }
 });
 
 function PrintStorage(key) {
-	chrome.storage.local.get(key, obj => {
-		if (!chrome.runtime.error) {
-			console.log(key ?? "chrome.storage.local =", obj);
-		} else {
-			console.log(chrome.runtime.error);
-		}
-	});
+    chrome.storage.local.get(key, (obj) => {
+        if (!chrome.runtime.error) {
+            console.log(key ?? 'chrome.storage.local =', obj);
+        } else {
+            console.log(chrome.runtime.error);
+        }
+    });
 }
 
 function SetToStorage(propertyName, propertyObj) {
-	const a = {};
-	a[propertyName] = propertyObj;
-	chrome.storage.local.set(a);
+    const a = {};
+    a[propertyName] = propertyObj;
+    chrome.storage.local.set(a);
 }
 
 function RemoveKeyFromStorage(key) {
-	chrome.storage.local.remove(key, function () {
-		const error = chrome.runtime.lastError;
-		if (error) {
-			console.error(error);
-		}
-	});
+    chrome.storage.local.remove(key, function () {
+        const error = chrome.runtime.lastError;
+        if (error) {
+            console.error(error);
+        }
+    });
 }
 
-console.log("commands (write right HERE): PrintStorage()/PrintStorage(key), SetToStorage(key, obj), RemoveKeyFromStorage(key/[])");
+console.log(
+    'commands (write right HERE): PrintStorage()/PrintStorage(key), SetToStorage(key, obj), RemoveKeyFromStorage(key/[])',
+);
 PrintStorage();

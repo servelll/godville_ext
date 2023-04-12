@@ -1,1 +1,1 @@
-AddErinomeLogsCheckingActions(undefined, document.querySelector("#wrap h3"));
+AddErinomeLogsCheckingActions(undefined, document.querySelector('#wrap h3'));

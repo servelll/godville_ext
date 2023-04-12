@@ -1,0 +1,55 @@
+{
+    "extends": "standard",
+    "root": true,
+    "env": {
+        "node": true,
+        "es6": true,
+        "mocha": true
+    },
+    "rules": {
+        "no-unused-vars": "warn",
+        "indent": [
+            "error",
+            4,
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "quotes": ["warn", "single"],
+        "semi": ["error", "never"],
+        "object-curly-spacing": ["error", "always"],
+        "key-spacing": [
+            "error",
+            {
+                "afterColon": true
+            }
+        ],
+        "no-multi-spaces": "error",
+        "space-before-function-paren": "off",
+        "max-len": [
+            "error",
+            {
+                "code": 120,
+                "ignoreComments": true,
+                "ignorePattern": "^import .*",
+                "ignoreRegExpLiterals": true,
+                "ignoreTrailingComments": true,
+                "ignoreUrls": true
+            }
+        ]
+    },
+    "overrides": [
+        {
+            "files": ["seeds/*.js"],
+            "rules": {
+                "camelcase": "off"
+            }
+        },
+        {
+            "files": ["*.json"],
+            "rules": {
+                "quotes": ["error", "double"]
+            }
+        }
+    ]
+}
