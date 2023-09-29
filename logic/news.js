@@ -265,6 +265,12 @@ async function AddCrosswordThings() {
             const callback = function (mutationsList, observer) {
                 mutationsList.forEach((mut) => {
                     if (mut.target.style.backgroundColor == 'rgb(255, 153, 153)') {
+                        (async () => {
+                            const key = 'Crosword_current_errors';
+                            const obj = (await chrome.storage.local.get(key)) ?? {};
+                            obj[mut.target.id] = mut.target.querySelector('input').value;
+                            await SetToStorage(key, obj);
+                        })();
                         mut.target.querySelector('input').value = '';
                         but.style.display = '';
                     }
@@ -640,12 +646,15 @@ function AddCouponThings() {
     if (!button.disabled) {
         // observer on success button click for remove ats
         //срабатывает в случае, если кнопка СТАНОВИТСЯ недоступна (в дуэлях и при переключении режимов)
+        const button_listener = () => {
+            button.click();
+        };
         const button_callback = function (mutationsList, observer) {
             console.log('button_callback inside');
             if (button.disabled) {
                 Array.from(document.getElementsByClassName('my_at')).forEach((el) => {
                     el.className = '';
-                    el.removeEventListener('click');
+                    el.removeEventListener('click', button_listener);
                 });
             }
         };
@@ -668,9 +677,7 @@ function AddCouponThings() {
                         }
                         at.title = coupon_text;
                         // Pushing at is pushing btn to take coupon
-                        at.addEventListener('click', () => {
-                            button.click();
-                        });
+                        at.addEventListener('click', button_listener);
                         const atdiv = document.createElement('div');
                         atdiv.textContent = ' (';
                         atdiv.className = 'my_div';
@@ -682,7 +689,9 @@ function AddCouponThings() {
             }
         };
         const coupon_observer = new MutationObserver(coupon_callback);
-        coupon_observer.observe(document.getElementById('bgn_t'), { childList: true });
+        coupon_observer.observe(document.getElementById('bgn_t'), {
+            childList: true,
+        });
 
         // First adding ats
         coupon_callback();

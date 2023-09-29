@@ -1,3 +1,5 @@
+let options = {};
+
 if (document.URL.slice(-5) != '.json') {
     //equip
     const eq_mas = Array.from(document.querySelectorAll('#equipment tr .value'));
@@ -103,7 +105,7 @@ if (document.URL.slice(-5) != '.json') {
             total_days_obj.title = `Дата-время регистрации [${d3.format('DD.MM.YYYY HH:mm')} - ${d4.format(
                 'DD.MM.YYYY HH:mm',
             )}]`;
-            total_days_obj.title += `\nДнем рождения считается ${d4.format('DD.MM.YYYY')}`;
+            total_days_obj.title += `\nДнем рождения считается ${d3.format('DD.MM.YYYY')}`;
             birth_approx = 'день';
         }
         const birth_d1 = total_days_obj ? d3 : d1;

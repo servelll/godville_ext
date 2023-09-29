@@ -97,6 +97,7 @@ body {
 
 .title_print {
     font-size: 85%;
+    cursor: help;
 }
 
 .rounded_field {

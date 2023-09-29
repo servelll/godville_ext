@@ -37,7 +37,9 @@ function AddLogsHistoryPopupObserver() {
             AddErinomeLogsCheckingActions(wup, document.querySelector('#lf_popover_c div:not(.wl_line)'));
         };
         const observer = new MutationObserver(observer_callback);
-        observer.observe(wup.querySelector('#lf_popover_c'), { childList: true });
+        observer.observe(wup.querySelector('#lf_popover_c'), {
+            childList: true,
+        });
     });
 }
 
@@ -95,7 +97,13 @@ function AddGodVoicesPopupObserver() {
             'подним',
         ];
         const global_par_table = [
-            { dict: {}, pre: '[x', post: '🛠]', id: 'MyGV_craft_del', title: 'Удалить все крафтовые гласы' },
+            {
+                dict: {},
+                pre: '[x',
+                post: '🛠]',
+                id: 'MyGV_craft_del',
+                title: 'Удалить все крафтовые гласы',
+            },
             {
                 dict: {},
                 pre: '[x',
@@ -103,7 +111,13 @@ function AddGodVoicesPopupObserver() {
                 id: 'MyGV_directions_del',
                 title: 'Удалить все гласы направлений (включая лестничные)',
             },
-            { dict: {}, pre: '[', post: ']', id: 'MyGV_del', title: 'Очистить все гласы' },
+            {
+                dict: {},
+                pre: '[',
+                post: ']',
+                id: 'MyGV_del',
+                title: 'Очистить все гласы',
+            },
         ];
 
         function UpdateObjText(par_entity) {
@@ -437,7 +451,11 @@ function AddHolemSearch() {
         const boss_hp = /\d+$/g.exec(document.querySelector('#o_hl1 > .l_val').textContent)[0];
         const hero_hp = /\d+$/g.exec(document.querySelector('#hk_health > .l_val').textContent)[0];
 
-        const params = new URLSearchParams({ str: boss_name, b: boss_hp, h1: hero_hp });
+        const params = new URLSearchParams({
+            str: boss_name,
+            b: boss_hp,
+            h1: hero_hp,
+        });
         let i = 2;
         Array.from(document.querySelectorAll('#alls > .block_content .line.oppl')).forEach((z) => {
             const text = z.querySelector('.opp_h > span').textContent;
