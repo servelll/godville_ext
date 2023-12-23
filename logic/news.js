@@ -256,25 +256,142 @@ async function AddCrosswordThings() {
         }
     });
 
-    //вешаем листенер для детекта ошибок с сервера
-    document.getElementById('crossword_submit')?.addEventListener('click', (e) => {
-        e.preventDefault();
+    const key_date = 'Crosword_current_errors_date';
+    const key = 'Crosword_current_errors';
+    const current = document.querySelector('#issue').textContent.slice(2);
 
-        const crossw_table = document.getElementById('cross_tbl');
-        if (crossw_table) {
-            const callback = function (mutationsList, observer) {
-                mutationsList.forEach((mut) => {
-                    if (mut.target.style.backgroundColor == 'rgb(255, 153, 153)') {
-                        (async () => {
-                            const key = 'Crosword_current_errors';
-                            const obj = (await chrome.storage.local.get(key)) ?? {};
-                            obj[mut.target.id] = mut.target.querySelector('input').value;
-                            await SetToStorage(key, obj);
-                        })();
+    //очистка старых данных
+    const obj = (await chrome.storage.local.get(key_date))?.[key_date];
+    if (obj != current) {
+        await SetToStorage(key_date, current);
+        await SetToStorage(key, {});
+    }
+
+    const crossw_table = document.getElementById('cross_tbl');
+    if (crossw_table) {
+        async function print_titles(_input) {
+            console.log('print_titles');
+            if (!_input) _input = (await chrome.storage.local.get(key))?.[key] ?? {};
+            //print hints to titles
+            Object.keys(_input).forEach((id) => {
+                const ru_array = _input[id].filter((char) => /[а-яА-Я]/.test(char)).sort();
+                const en_array = _input[id].filter((char) => /[a-zA-Z]/.test(char)).sort();
+                const array = _input[id].filter((char) => !ru_array.includes(char) && !en_array.includes(char));
+                //console.log(id, _input[id], ru_array);
+                /*
+                if (_input[id].includes('') || _input[id].includes(' ') || _input[id].includes(' '))
+                    array.push('<пустота/пробел>');
+                */
+                const item = crossw_table.querySelector('#' + id);
+                const t = [
+                    'Неверные символы:',
+                    `ru: ${ru_array.join('')}`,
+                    `en: ${en_array.join('')}`,
+                    array.join(' '),
+                ];
+                item.title = t.join('\n');
+                _input[id] = array;
+            });
+        }
+        await print_titles();
+
+        //вешаем листенер для детекта ошибок с сервера
+        document.getElementById('crossword_submit')?.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const callback = async function (mutationsList, observer) {
+                const buffered_storage = (await chrome.storage.local.get(key))?.[key] ?? {};
+                for (let mut of mutationsList) {
+                    const input = mut.target.querySelector('input');
+                    if (
+                        //!Object.keys(buffered_storage).includes(input.id) &&
+                        mut.target.style.backgroundColor == 'rgb(255, 153, 153)'
+                    ) {
+                        console.log('mutationsListIF', mut, { ...buffered_storage });
+
+                        if (buffered_storage[input.id]?.includes(input.value)) {
+                            console.log(input.value + ' already in ' + input.id);
+                        } else {
+                            console.log(input.value + ' to ' + input.id);
+                            if (!(input.id in buffered_storage)) buffered_storage[input.id] = [];
+                            buffered_storage[input.id].push(input.value);
+                        }
+
                         mut.target.querySelector('input').value = '';
                         but.style.display = '';
                     }
-                });
+                }
+                observer.disconnect();
+
+                await SetToStorage(key, buffered_storage);
+                await print_titles(buffered_storage);
+
+                //add buttons
+                if (!cr.querySelector('#my_brute_button')) {
+                    async function fill_brute(alf) {
+                        const obj = (await chrome.storage.local.get(key))?.[key];
+                        Object.keys(obj).forEach((id) => {
+                            const ru_array = obj[id].filter((char) => /[а-яА-Я]/.test(char));
+                            //console.log('ru_array', ru_array);
+                            const item = crossw_table.querySelector('#' + id);
+                            item.value = alf
+                                .split('')
+                                .find((b) => !ru_array.includes(b))
+                                .toUpperCase();
+                        });
+                    }
+
+                    const button_brute = document.createElement('button');
+                    button_brute.id = 'my_brute_button';
+                    button_brute.textContent = '[А-Я]';
+                    button_brute.onclick = async () => {
+                        const ru_alf = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
+                        await fill_brute(ru_alf);
+                    };
+                    cr.appendChild(button_brute);
+
+                    const button_brute_consonants = document.createElement('button');
+                    button_brute_consonants.textContent = 'Согласные';
+                    const cons = 'БВГДЖЗЙКЛМНПРСТФХЦЧШЩ ЬЪ';
+                    button_brute_consonants.title = `[${cons}]`;
+                    button_brute_consonants.onclick = async () => {
+                        await fill_brute(
+                            cons
+                                .split('')
+                                .map((i) => i != ' ')
+                                .join(''),
+                        );
+                    };
+                    cr.appendChild(button_brute_consonants);
+
+                    const button_brute_vowels = document.createElement('button');
+                    button_brute_vowels.textContent = 'Гласные';
+                    const vovels = 'АЕЁИОУЫЭЮЯ';
+                    button_brute_vowels.title = `[${vovels}]`;
+                    button_brute_vowels.onclick = async () => {
+                        await fill_brute(vovels);
+                    };
+                    cr.appendChild(button_brute_vowels);
+
+                    const button_brute_another = document.createElement('button');
+                    button_brute_another.textContent = 'Остальное';
+                    const another = '- .';
+                    button_brute_another.title = `[${another}]`;
+                    button_brute_another.onclick = async () => {
+                        await fill_brute(another);
+                    };
+                    cr.appendChild(button_brute_another);
+
+                    const button_clear = document.createElement('button');
+                    button_clear.textContent = 'Очистить буфер';
+                    button_clear.onclick = async () => {
+                        await SetToStorage(key, {});
+                        print_titles();
+
+                        //todo bugged after click
+                    };
+                    cr.appendChild(button_clear);
+                }
             };
             const config = {
                 attributes: true,
@@ -283,10 +400,11 @@ async function AddCrosswordThings() {
 
             const observer = new MutationObserver(callback);
             observer.observe(crossw_table, config);
-        }
-    });
+        });
+    }
 
     console.log('AddCrosswordThings done');
+    return data.substring(pos_mas[1], pos_mas[2]);
 }
 
 let forecast = Array.from(document.querySelectorAll('.fc > p')).reduce((sum, i) => sum + i.textContent, '');
@@ -393,7 +511,7 @@ function AddWantedMonsterLinks() {
 AddWantedMonsterLinks();
 
 //bingo//
-function UpdateBingo() {
+function UpdateBingo(itemsStr) {
     const l_clicks = document.getElementById('l_clicks');
     let p2 = document.getElementById('bingo_possible_price_next');
     if (!p2) {
@@ -439,10 +557,13 @@ function UpdateBingo() {
         if (n_score > 0) p2.innerText += ',\nза досрочный забор `Ой, всё`: ' + Calc(n_score_sum, false);
     }
 
+    //new part
+    if (itemsStr) AddBingoPercents(itemsStr);
+
     console.log('UpdateBingo done');
 }
 
-function AddBingoListeners() {
+function AddBingoListeners(itemsStr) {
     UpdateBingo();
     const bingo_target = document.getElementById('b_nscore');
     const bingo_config = {
@@ -450,7 +571,7 @@ function AddBingoListeners() {
         characterData: true,
     };
     const bingo_callback = function (mutationsList, observer) {
-        UpdateBingo();
+        UpdateBingo(itemsStr);
     };
     const bingo_observer = new MutationObserver(bingo_callback);
     bingo_observer.observe(bingo_target, bingo_config);
@@ -716,10 +837,70 @@ function AddVoteHints() {
     Трофеи (да чтоб вам самим выпал день без лечилок во время подряда)`;
 }
 
+function AddBingoPercents(items_str) {
+    console.log('items_str', items_str);
+    const bingo_spans = Array.from(document.querySelectorAll('#bgn span:not(.bgnk)'));
+    bingo_spans.forEach((span) => {
+        const bingo_hint = document.createElement('z');
+        const regexp = new RegExp('^[^|\n]*' + span.textContent + '.*', 'gim');
+        const arr = [...items_str.matchAll(regexp)].map((i) => i[0]);
+        bingo_hint.textContent = ` (${arr.length})`;
+
+        //spliting by groups
+        const groups = {};
+        arr.forEach((s) => {
+            const regexpTag = new RegExp('|(.+)');
+            let group = /\|\(.+\)/.exec(s) ?? ' ';
+            if (group != ' ') s = s.replaceAll(group[0], '');
+            group = group[0].slice(2, -1);
+            if (!groups[group]) groups[group] = [];
+            groups[group].push(s);
+        });
+        //froming title string
+        let str = Object.keys(groups).map(
+            (key) =>
+                key +
+                ' (' +
+                groups[key].length +
+                ')\n' +
+                groups[key].slice(0, 9).join('\n') +
+                (groups[key].length >= 10 ? '\n...\n' + groups[key][groups[key].length - 1] : ''),
+        );
+        //console.log('str', str);
+        bingo_hint.title = str.join('\n\n');
+
+        span.parentNode.appendChild(bingo_hint);
+    });
+}
+
 window.addEventListener('load', (e) => {
-    AddBingoListeners();
-    AddCrosswordThings();
+    AddCrosswordThings().then((itemsStr) => {
+        AddBingoListeners(itemsStr);
+        AddBingoPercents(itemsStr);
+    });
     AddCondensatorThings();
     AddCouponThings();
     AddVoteHints();
 });
+/*
+let socket = new WebSocket('wss://godville.net/news/cpb');
+socket.onmessage = function (event) {
+    console.log(`[message] Данные получены с сервера: ${event.data} ${performance.now()}`);
+};
+socket.onopen = function (e) {
+    console.log('[open] Соединение установлено ' + performance.now());
+};
+socket.onclose = function (event) {
+    if (event.wasClean) {
+        console.log(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason} ${performance.now()}`);
+    } else {
+        // например, сервер убил процесс или сеть недоступна
+        // обычно в этом случае event.code 1006
+        console.log('[close] Соединение прервано ' + performance.now());
+    }
+};
+
+socket.onerror = function (error) {
+    console.log(`[error] ${performance.now()}`);
+};
+*/
