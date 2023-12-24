@@ -838,10 +838,12 @@ function AddVoteHints() {
 }
 
 function AddBingoPercents(items_str) {
+    if (document.querySelector('#bgn z.my_hint')) return;
     console.log('items_str', items_str);
     const bingo_spans = Array.from(document.querySelectorAll('#bgn span:not(.bgnk)'));
     bingo_spans.forEach((span) => {
         const bingo_hint = document.createElement('z');
+        bingo_hint.className = 'my_hint';
         const regexp = new RegExp('^[^|\n]*' + span.textContent + '.*', 'gim');
         const arr = [...items_str.matchAll(regexp)].map((i) => i[0]);
         bingo_hint.textContent = ` (${arr.length})`;
