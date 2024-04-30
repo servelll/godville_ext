@@ -34,7 +34,7 @@
     left: 20px;
 }
 
-.row_header:hover .tooltip {
+.row_header:hover .tooltip, .row_header.row_visible .tooltip {
     display: block;
 }
 

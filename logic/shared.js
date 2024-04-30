@@ -306,6 +306,7 @@ function CorsGetPageFromUrl(url) {
         }
     });
 }
+
 //superhero.js && last_fight.js
 async function AddErinomeLogsCheckingActions(wup, input_node) {
     console.log('AddErinomeLogsCheckingActions start');
@@ -326,9 +327,26 @@ async function AddErinomeLogsCheckingActions(wup, input_node) {
     LogsCheck_container.id = 'my_logs_check_container';
     LogsCheck_container.className = 'wl_line my_wl_line';
 
+    const f_inner_div = document.createElement('div');
+    f_inner_div.textContent = 'По строкам: ';
+
     const f_text = document.createElement('z');
     f_text.className = 'row_header';
-    f_text.textContent = 'По строкам: ';
+
+    function change_visibility() {
+        if (f_text.className == 'row_header') {
+            f_text.className = 'row_header row_visible';
+            f_text.querySelector('th').textContent = '🔒Тип';
+        } else {
+            f_text.className = 'row_header';
+            f_text.querySelector('th').textContent = 'Тип';
+        }
+    }
+    f_inner_div.onclick = (e) => {
+        change_visibility();
+        e.preventDefault();
+    };
+    f_text.appendChild(f_inner_div);
     LogsCheck_container.appendChild(f_text);
 
     const f_mytitle = document.createElement('span');
@@ -380,24 +398,55 @@ async function AddErinomeLogsCheckingActions(wup, input_node) {
         z_total.textContent = dom_arr_temp.length;
         z_unknown.textContent = dom_arr_temp.length - dom_saved.length - dom_unsaved.length + '[?]';
 
-        const types_count = {};
-        dom_arr_temp.forEach((x) => {
-            const key = x.textContent;
-            if (!types_count[key]) types_count[key] = { saved: 0, unsaved: 0, unknown: 0, total: 0 };
-            types_count[key].total++;
-            if (x.parentNode.parentNode.textContent.includes('[+]')) types_count[key].saved++;
-            else if (x.parentNode.parentNode.textContent.includes('[-]')) types_count[key].unsaved++;
-            else types_count[key].unknown++;
+        const types_ints = {};
+        dom_arr_temp.forEach((a, i) => {
+            const key = a.textContent;
+            if (!types_ints[key])
+                types_ints[key] = {
+                    saved: [],
+                    unsaved: [],
+                    unknown: [],
+                    total: 0,
+                };
+            types_ints[key].total++;
+            if (a.parentNode.parentNode.textContent.includes('[+]')) types_ints[key].saved.push(i);
+            else if (a.parentNode.parentNode.textContent.includes('[-]')) types_ints[key].unsaved.push(i);
+            else types_ints[key].unknown.push(i);
         });
-        console.log(types_count);
+        console.log({ types_ints });
 
-        const thead = '<thead><th>Тип</th><th>+</th><th>-</th><th>?</th><th>TOTAL</th></thead>';
-        let tbody = '';
-        Object.entries(types_count).forEach((entry) => {
+        const t = `<table><thead><th>Тип</th><th>+</th><th>-</th><th>?</th><th>TOTAL</th></thead></table>`;
+        f_mytitle.innerHTML = t;
+
+        function scrollIntoCycle(array) {
+            //console.log({ array });
+            change_visibility();
+            dom_arr_temp[array[0]].scrollIntoView();
+        }
+
+        const tbody = document.createElement('tbody');
+        Object.entries(types_ints).forEach((entry) => {
             const [key, value] = entry;
-            tbody += `<tr><td>${key}</td><td>${value.saved}</td><td>${value.unsaved}</td><td>${value.unknown}</td><td>${value.total}</td></tr>`;
+            const tr = document.createElement('tr');
+            for (const [arr, text] of [
+                [null, key],
+                [value.saved, value.saved.length],
+                [value.unsaved, value.unsaved.length],
+                [value.unknown, value.unknown.length],
+                [null, value.total],
+            ]) {
+                const td = document.createElement('td');
+                td.textContent = text;
+                if (arr != null && text != 0)
+                    td.onclick = (e) => {
+                        scrollIntoCycle(arr);
+                        e.preventDefault();
+                    };
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
         });
-        f_mytitle.innerHTML = `<table>${thead}${tbody}</table>`;
+        f_mytitle.firstChild.appendChild(tbody);
     }
 
     async function DrawUI(diff_id_arr, key) {
