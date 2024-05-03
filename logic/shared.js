@@ -253,7 +253,8 @@ const cors_urls = [
     //"https://justcors.com/ https://justcors.com/tl_5c69dec/" //need autorization
     //"https://cors-anywhere.herokuapp.com/corsdemo https://cors-anywhere.herokuapp.com/" //need autorization + requiered { headers: { 'x-requested-with': "" } }
 ];
-function CorsGetPageFromUrl(url) {
+function CorsGetPageFromUrl(url, params) {
+    params.headers['x-requested-with'] = '';
     return new Promise(async (resolve, reject) => {
         console.log('CorsGetPageFromUrl start');
         if (document.location.origin != new URL(url).origin) {
@@ -265,8 +266,7 @@ function CorsGetPageFromUrl(url) {
                 if (c.done) break;
                 another_loop = false;
                 try {
-                    let params;
-                    if (c.value.includes('.herokuapp.com')) params = { headers: { 'x-requested-with': '' } };
+                    //if (c.value.includes(".herokuapp.com"))
                     //encodeURIComponent(
                     await fetch(c.value + url, params)
                         .then((response) => {
@@ -421,7 +421,7 @@ async function AddErinomeLogsCheckingActions(wup, input_node) {
         function scrollIntoCycle(array) {
             //console.log({ array });
             change_visibility();
-            dom_arr_temp[array[0]].scrollIntoView();
+            if (array.length > 0) dom_arr_temp[array[0]]?.scrollIntoView();
         }
 
         const tbody = document.createElement('tbody');
@@ -709,9 +709,9 @@ function CreateLogLinkCheckingButtonObject(id) {
     };
     return a;
 }
-function EditAByChromeStorageData(a, id) {
-    //return
-    chrome.storage.local.get('MyGV_LoadedLogs').then((obj) => {
+async function EditAByChromeStorageData(a, id) {
+    try {
+        const obj = await chrome.storage.local.get('MyGV_LoadedLogs');
         if (obj && obj['MyGV_LoadedLogs'] && obj['MyGV_LoadedLogs'].includes(id)) {
             a.textContent = '[+]';
             a.removeAttribute('title');
@@ -726,7 +726,9 @@ function EditAByChromeStorageData(a, id) {
                 a.textContent = '[-]';
             }
         });
-    });
+    } catch (e) {
+        console.error(e, a, id);
+    }
 }
 
 function AddMovesCountVisibleTools(dmap_selector, title_selector) {

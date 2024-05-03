@@ -296,10 +296,13 @@ async function AddCrosswordThings() {
         await print_titles();
 
         //вешаем листенер для детекта ошибок с сервера
-        document.getElementById('crossword_submit')?.addEventListener('click', (e) => {
+        document.getElementById('crossword_submit')?.addEventListener('click', function (e) {
             e.preventDefault();
 
             const callback = async function (mutationsList, observer) {
+                const status = document.getElementById('cross_res');
+                if (status.textContent == 'Кроссворд отгадан! Герою отправляется приятный бонус...') return;
+
                 const buffered_storage = (await chrome.storage.local.get(key))?.[key] ?? {};
                 for (let mut of mutationsList) {
                     const input = mut.target.querySelector('input');
@@ -761,7 +764,8 @@ function AddCondensatorThings() {
 // Coupon things
 function AddCouponThings() {
     const button = document.querySelector('#coupon_b');
-    const coupon_text = document.querySelector('#cpn_name').innerText.replaceAll('\n', ' ').toLowerCase().trim();
+    const coupon = document.querySelector('#cpn_name');
+    const coupon_text = coupon ? coupon.innerText.replaceAll('\n', ' ').toLowerCase().trim() : '';
 
     //даже не пытаемся добавлять элементы, если купон уже забран
     if (!button.disabled) {
