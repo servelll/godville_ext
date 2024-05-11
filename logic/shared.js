@@ -421,7 +421,12 @@ async function AddErinomeLogsCheckingActions(wup, input_node) {
         function scrollIntoCycle(array) {
             //console.log({ array });
             change_visibility();
-            if (array.length > 0) dom_arr_temp[array[0]]?.scrollIntoView();
+            if (array.length > 0) {
+                const y = window.scrollY;
+                const x = window.scrollX;
+                dom_arr_temp[array[0]]?.scrollIntoView();
+                window.scroll(x, y);
+            }
         }
 
         const tbody = document.createElement('tbody');
